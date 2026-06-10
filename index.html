@@ -409,6 +409,14 @@ function render(){
   const app=document.getElementById('app');
   if(!app) return;
 
+  // Sync msel from saved ticks before savebar reads S.msel.size
+  if((isMember()||isLeader()) && S.session?.id){
+    const myId=S.session.id;
+    if(S.msel.size===0 && (S.ticks[myId]||[]).length>0){
+      S.msel=new Set(S.ticks[myId]);
+    }
+  }
+
   // savebar
   const sb=document.getElementById('savebar');
   if(S.page==='tick'&&(isMember()||isLeader())){sb.classList.add('on');document.getElementById('sbc').textContent=S.msel.size;}
@@ -696,11 +704,6 @@ function pageTick(){
   const myId = S.session.id;
   const clanName=myClanName();
 
-  // Init msel from ticks if not already (member or leader joining tick page)
-  if((isMember()||isLeader()) && S.msel.size===0 && (S.ticks[myId]||[]).length>0){
-    S.msel=new Set(S.ticks[myId]||[]);
-  }
-
   const me = isMember()
     ? S.members.find(m=>m.id===myId)
     : S.leaders.find(l=>l.id===myId);
@@ -769,8 +772,12 @@ window.saveTicks=async function(){
   setPulse('loading');
   try {
     const memberId=S.session.id;
-    await fsSet('ticks',memberId,{flowerIds:[...S.msel],updatedAt:new Date().toISOString()});
-    S.ticks[memberId]=[...S.msel];
+    const saved=[...S.msel];
+    await fsSet('ticks',memberId,{flowerIds:saved,updatedAt:new Date().toISOString()});
+    S.ticks[memberId]=saved;
+    // Re-assign msel from saved so size stays correct and init condition won't re-trigger
+    S.msel=new Set(saved);
+    document.getElementById('sbc').textContent=S.msel.size;
     toast('Đã lưu 🌸');
   } catch(e){ toast('Lỗi lưu: '+e.message,'er'); }
   setPulse('');
