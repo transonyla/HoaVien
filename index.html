@@ -4,741 +4,812 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌺 Hoa Viên</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --g9:#1a2e1e;--g7:#2d4a34;--g4:#5c8f66;--g1:#e8f4ea;--g0:#f4f8f4;
-  --pk:#e8527a;--pkl:#fde8ef;--pkd:#c03060;
-  --t9:#1a2010;--t6:#3d5240;--t4:#6b8070;--t2:#a8bfaa;
-  --bd:#ddeadf;--wh:#fff;
-  --r:12px;--rp:999px;
-  --sh:0 2px 10px rgba(26,46,30,.09);
+  --forest:#1a3a22;--forest2:#2d5438;--leaf:#4a8c5c;--mint:#c8e6c9;--sage:#e8f5e9;
+  --petal:#e91e8c;--petal2:#f06292;--blush:#fce4ec;
+  --ink:#0d1f12;--mist:#6b8f71;--haze:#b2d8b8;--paper:#f5faf6;--white:#ffffff;
+  --bd:#d4e8d6;--r:14px;--rp:999px;
+  --sh:0 2px 12px rgba(26,58,34,.08);--shd:0 8px 32px rgba(26,58,34,.14);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background:var(--g0);color:var(--t9);min-height:100vh;font-size:15px}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--haze);border-radius:4px}
 
-/* layout */
-.topbar{background:var(--g9);height:54px;display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.topbar-logo{font-size:1.1rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:7px}
-.topbar-space{flex:1}
-.sync{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#b8d9bc}
-.dot{width:7px;height:7px;border-radius:50%;background:#5c8f66;transition:background .3s}
-.dot.spin{background:#eab308;animation:pu 1s infinite}
-.dot.err{background:#ef4444}
-@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+/* topbar */
+.bar{background:var(--forest);height:56px;display:flex;align-items:center;padding:0 16px;gap:10px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.bar-logo{font-size:1.05rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;letter-spacing:-.01em}
+.bar-sp{flex:1}
+.bar-sync{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#a5d6a7}
+.pulse{width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0;transition:background .3s}
+.pulse.loading{background:#ffd54f;animation:blink 1s infinite}
+.pulse.err{background:#ef5350}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
-.wrap{max-width:860px;margin:0 auto;padding:18px 14px 80px}
+.wrap{max-width:900px;margin:0 auto;padding:20px 14px 90px}
 
-/* nav tabs */
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
-.tab{padding:7px 14px;border-radius:var(--rp);font-size:.82rem;font-weight:700;border:1.5px solid var(--bd);background:var(--wh);color:var(--t4);cursor:pointer;transition:all .15s;white-space:nowrap}
-.tab:hover{border-color:var(--t2);color:var(--t6)}
-.tab.on{background:var(--g9);color:#fff;border-color:var(--g9)}
-.tab.pk{background:var(--pk);color:#fff;border-color:var(--pk)}
+/* nav */
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px}
+.nvb{padding:8px 15px;border-radius:var(--rp);font-size:.8rem;font-weight:700;border:1.5px solid var(--bd);background:var(--white);color:var(--mist);cursor:pointer;transition:all .14s;white-space:nowrap;font-family:inherit}
+.nvb:hover{color:var(--forest);border-color:var(--leaf)}
+.nvb.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+.nvb.pk{background:var(--petal);color:#fff;border-color:var(--petal)}
 
-/* cards */
-.card{background:var(--wh);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--sh);padding:16px}
-.card+.card{margin-top:12px}
+/* card */
+.card{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--sh);padding:18px}
+.card+.card{margin-top:14px}
+.card-title{font-size:.88rem;font-weight:800;color:var(--forest2);margin-bottom:14px;display:flex;align-items:center;gap:7px}
 
 /* flower grid */
-.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.fc{background:var(--wh);border-radius:var(--r);border:1.5px solid var(--bd);box-shadow:var(--sh);overflow:hidden;transition:transform .15s,box-shadow .15s}
-.fc:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(26,46,30,.13)}
-.fc .img-wrap{width:100%;aspect-ratio:1;overflow:hidden;background:linear-gradient(135deg,var(--g1),var(--pkl));position:relative}
-.fc .img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
-.fc:hover .img-wrap img{transform:scale(1.06)}
-.no-img{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
-.no-img .letter{font-size:2.2rem;font-weight:800;line-height:1}
-.no-img .lname{font-size:.72rem;font-weight:700;color:var(--t4);text-align:center;padding:0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.fc .fbody{padding:9px 10px 11px}
-.fc .fname{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:var(--rp);font-size:.68rem;font-weight:700;margin-bottom:5px}
-.bdot{width:6px;height:6px;border-radius:50%}
-.fcount{font-size:.7rem;color:var(--t4);font-weight:600;margin-bottom:2px}
-.fowns{font-size:.68rem;color:var(--t2);line-height:1.5}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
+.fc{background:var(--white);border-radius:var(--r);border:1.5px solid var(--bd);overflow:hidden;transition:transform .14s,box-shadow .14s;position:relative}
+.fc:hover{transform:translateY(-2px);box-shadow:var(--shd)}
+.fc-img{width:100%;aspect-ratio:1;overflow:hidden;background:linear-gradient(135deg,var(--sage),var(--blush));position:relative;display:flex;align-items:center;justify-content:center}
+.fc-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.fc:hover .fc-img img{transform:scale(1.07)}
+.fc-letter{font-size:2.4rem;font-weight:800;line-height:1}
+.fc-body{padding:10px 11px 12px}
+.fc-name{font-size:.82rem;font-weight:700;line-height:1.35;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fc-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--rp);font-size:.66rem;font-weight:700}
+.fc-dot{width:6px;height:6px;border-radius:50%}
+.fc-owns{font-size:.69rem;color:var(--mist);margin-top:4px;line-height:1.5}
 
-/* tick card */
+/* tick mode */
 .tc{cursor:pointer;user-select:none}
-.tc.ticked{border-color:var(--pk);box-shadow:0 0 0 2px var(--pkl),var(--sh)}
-.chk{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.7);border:2px solid rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:12px;backdrop-filter:blur(2px);transition:all .15s}
-.tc.ticked .chk{background:var(--pk);border-color:var(--pk);color:#fff}
+.tc.ticked{border-color:var(--petal);box-shadow:0 0 0 2px var(--blush)}
+.chk{position:absolute;top:7px;right:7px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.75);border:2px solid rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:13px;backdrop-filter:blur(3px);transition:all .13s}
+.tc.ticked .chk{background:var(--petal);border-color:var(--petal);color:#fff}
 
-/* group heading */
-.gh{display:flex;align-items:center;gap:9px;margin:24px 0 12px}
-.gh-bar{width:4px;height:20px;border-radius:2px;flex-shrink:0}
-.gh h2{font-size:1rem;font-weight:800}
-.gh .cnt{font-size:.72rem;color:var(--t4);background:var(--g0);border:1px solid var(--bd);padding:2px 7px;border-radius:var(--rp);font-weight:600}
+/* group */
+.grp{margin:26px 0 13px;display:flex;align-items:center;gap:9px}
+.grp-bar{width:4px;height:20px;border-radius:3px;background:var(--petal);flex-shrink:0}
+.grp h2{font-size:.98rem;font-weight:800}
+.grp-cnt{font-size:.7rem;color:var(--mist);background:var(--sage);border:1px solid var(--bd);padding:2px 8px;border-radius:var(--rp);font-weight:600}
 
-/* forms */
-.fg{display:flex;flex-direction:column;gap:5px}
-.fl{font-size:.78rem;font-weight:700;color:var(--t6)}
-.fi{padding:9px 11px;border-radius:8px;border:1.5px solid var(--bd);background:var(--wh);font-family:inherit;font-size:.87rem;color:var(--t9);outline:none;transition:border-color .15s;width:100%}
-.fi:focus{border-color:var(--g4)}
-.fi::placeholder{color:var(--t2)}
-select.fi{cursor:pointer}
-.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-
-/* color picker */
-.cpick{display:flex;gap:6px;flex-wrap:wrap}
-.copt{padding:4px 11px;border-radius:var(--rp);border:2px solid var(--bd);cursor:pointer;font-size:.76rem;font-weight:700;color:var(--t4);background:var(--wh);transition:all .12s}
-
-/* buttons */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:8px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:all .14s}
-.btn-g{background:var(--g7);color:#fff}.btn-g:hover{background:var(--g4)}
-.btn-p{background:var(--pk);color:#fff}.btn-p:hover{background:var(--pkd)}
-.btn-o{background:transparent;color:var(--t6);border:1.5px solid var(--bd)}.btn-o:hover{border-color:var(--t2)}
-.btn-r{background:transparent;color:#ef4444;border:1.5px solid #fca5a5}.btn-r:hover{background:#fff0f0}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-sm{padding:6px 11px;font-size:.78rem}
+/* form */
+.fg-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.fg-col{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:.76rem;font-weight:700;color:var(--forest2)}
+.fi{padding:9px 12px;border-radius:9px;border:1.5px solid var(--bd);background:var(--white);font-family:inherit;font-size:.87rem;color:var(--ink);outline:none;transition:border-color .14s;width:100%}
+.fi:focus{border-color:var(--leaf)}
+.fi::placeholder{color:var(--haze)}
+select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8f71' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 
 /* search */
 .sbar{position:relative;margin-bottom:16px}
-.sbar input{padding-left:36px}
-.sico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t2);pointer-events:none}
+.sbar input{padding-left:38px}
+.sico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--haze);pointer-events:none;font-size:14px}
 
 /* color filter */
 .cfbar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:18px}
-.ctab{padding:4px 12px;border-radius:var(--rp);font-size:.76rem;font-weight:700;border:1.5px solid var(--bd);background:var(--wh);color:var(--t4);cursor:pointer;transition:all .13s}
-.ctab:hover{border-color:var(--t2)}
-.ctab.on{border-width:2px}
+.ctab{padding:4px 12px;border-radius:var(--rp);font-size:.74rem;font-weight:700;border:1.5px solid var(--bd);background:var(--white);color:var(--mist);cursor:pointer;transition:all .12s}
+.ctab:hover{border-color:var(--mist)}
+.ctab.on{border-width:2px;color:var(--ink)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 17px;border-radius:9px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:all .13s}
+.btn-g{background:var(--forest2);color:#fff}.btn-g:hover{background:var(--leaf)}
+.btn-p{background:var(--petal);color:#fff}.btn-p:hover{background:#c2185b}
+.btn-o{background:transparent;color:var(--forest2);border:1.5px solid var(--bd)}.btn-o:hover{border-color:var(--mist)}
+.btn-r{background:transparent;color:#d32f2f;border:1.5px solid #ffcdd2}.btn-r:hover{background:#ffebee}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-sm{padding:6px 11px;font-size:.77rem}
+.btn-xs{padding:4px 9px;font-size:.73rem}
+.irow{display:flex;gap:8px;align-items:flex-end}
+.irow .fi{flex:1}
 
 /* member table */
 .mtbl{width:100%;border-collapse:collapse}
-.mtbl th{text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--t4);padding:9px 12px;border-bottom:1.5px solid var(--bd)}
-.mtbl td{padding:11px 12px;border-bottom:1px solid var(--g0);font-size:.87rem;vertical-align:middle}
-.mtbl tr:hover td{background:var(--g1)}
-.mbar-w{display:flex;align-items:center;gap:8px;min-width:100px}
-.mbar{flex:1;height:6px;border-radius:3px;background:var(--g0);overflow:hidden}
-.mbar-f{height:100%;border-radius:3px;background:var(--pk);transition:width .4s}
-.mlbl{font-size:.76rem;font-weight:700;color:var(--pkd);white-space:nowrap}
-.ibtn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;font-size:.9rem;transition:background .13s;color:var(--t4)}
-.ibtn:hover{background:var(--g0)}
-.ibtn.del:hover{background:#fff0f0;color:#ef4444}
+.mtbl th{text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mist);padding:9px 12px;border-bottom:2px solid var(--bd)}
+.mtbl td{padding:12px 12px;border-bottom:1px solid var(--sage);font-size:.86rem;vertical-align:middle}
+.mtbl tr:last-child td{border-bottom:none}
+.mtbl tr:hover td{background:var(--sage)}
+.mbar-w{display:flex;align-items:center;gap:8px;min-width:90px}
+.mbar{flex:1;height:5px;border-radius:3px;background:var(--sage);overflow:hidden}
+.mbar-f{height:100%;border-radius:3px;background:var(--petal);transition:width .4s}
+.mlbl{font-size:.74rem;font-weight:700;color:var(--petal);white-space:nowrap}
+.ibtn{background:none;border:none;cursor:pointer;padding:4px 7px;border-radius:7px;font-size:.88rem;transition:background .12s;color:var(--mist)}
+.ibtn:hover{background:var(--sage)}
+.ibtn.del:hover{background:#ffebee;color:#d32f2f}
 
 /* stats */
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:18px}
-.scard{background:var(--wh);border-radius:var(--r);border:1px solid var(--bd);padding:13px 14px}
-.sval{font-size:1.5rem;font-weight:800;line-height:1}
-.slbl{font-size:.7rem;font-weight:700;color:var(--t4);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:20px}
+.sc{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);padding:13px 14px}
+.sv{font-size:1.55rem;font-weight:800;line-height:1}
+.sl{font-size:.67rem;font-weight:700;color:var(--mist);margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
 
 /* save bar */
-.savebar{position:fixed;bottom:0;left:0;right:0;background:var(--g9);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:11px 18px;z-index:90;box-shadow:0 -3px 16px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .22s}
-.savebar.on{transform:translateY(0)}
+.savebar{position:fixed;bottom:0;left:0;right:0;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;z-index:150;box-shadow:0 -4px 20px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .22s}
+.savebar.on{transform:none}
+
+/* member picker */
+.mpicker{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--shd);padding:18px;margin-bottom:20px}
+.mpicker-title{font-size:.88rem;font-weight:800;color:var(--forest2);margin-bottom:13px}
+.mlist{display:flex;flex-wrap:wrap;gap:7px}
+.mchip{padding:7px 14px;border-radius:var(--rp);font-size:.8rem;font-weight:700;border:1.5px solid var(--bd);background:var(--white);color:var(--mist);cursor:pointer;transition:all .13s}
+.mchip:hover{border-color:var(--leaf);color:var(--forest)}
+.mchip.on{background:var(--petal);color:#fff;border-color:var(--petal)}
 
 /* toast */
-.toasts{position:fixed;top:62px;right:12px;z-index:999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
-.toast{background:var(--g9);color:#fff;padding:9px 14px;border-radius:8px;font-size:.82rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:tin .25s ease,tout .3s ease 2.1s forwards;pointer-events:auto}
-.toast.ok{border-left:3px solid #22c55e}
-.toast.er{border-left:3px solid #ef4444}
-.toast.wn{border-left:3px solid #eab308}
+.toasts{position:fixed;top:64px;right:12px;z-index:999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--forest);color:#fff;padding:10px 15px;border-radius:9px;font-size:.81rem;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.2);animation:tin .22s ease,tout .28s ease 2.2s forwards;pointer-events:auto;max-width:280px}
+.toast.ok{border-left:3px solid #4caf50}
+.toast.er{border-left:3px solid #ef5350}
+.toast.wn{border-left:3px solid #ffc107}
 @keyframes tin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 @keyframes tout{from{opacity:1}to{opacity:0;transform:translateX(16px)}}
 
 /* modal */
-.mbg{position:fixed;inset:0;background:rgba(26,46,30,.4);z-index:500;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:opacity .18s}
+.mbg{position:fixed;inset:0;background:rgba(13,31,18,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:opacity .17s}
 .mbg.on{opacity:1;pointer-events:auto}
-.mbox{background:var(--wh);border-radius:var(--r);padding:22px;max-width:420px;width:100%;box-shadow:0 8px 36px rgba(26,46,30,.18);transform:scale(.95);transition:transform .18s;max-height:85vh;overflow-y:auto}
-.mbg.on .mbox{transform:scale(1)}
-.mttl{font-size:.98rem;font-weight:800;margin-bottom:10px}
-.mbdy{font-size:.86rem;color:var(--t6);margin-bottom:16px;line-height:1.65}
-.mft{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
+.mbox{background:var(--white);border-radius:var(--r);padding:24px;max-width:430px;width:100%;box-shadow:var(--shd);transform:scale(.94);transition:transform .17s;max-height:88vh;overflow-y:auto}
+.mbg.on .mbox{transform:none}
+.mttl{font-size:1rem;font-weight:800;margin-bottom:10px}
+.mbdy{font-size:.86rem;color:var(--forest2);margin-bottom:18px;line-height:1.7}
+.mft{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 
 /* spinner */
-.sp{display:inline-block;width:16px;height:16px;border:2px solid var(--bd);border-top-color:var(--g4);border-radius:50%;animation:spin .7s linear infinite}
+.sp{display:inline-block;width:15px;height:15px;border:2px solid var(--haze);border-top-color:var(--leaf);border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading{display:flex;align-items:center;justify-content:center;padding:52px;gap:10px;color:var(--t4);font-size:.87rem}
+.loading{display:flex;align-items:center;justify-content:center;padding:60px;gap:10px;color:var(--mist);font-size:.87rem}
 
 /* empty */
-.empty{text-align:center;padding:40px 16px;color:var(--t2)}
-.empty .ei{font-size:2.4rem;margin-bottom:9px}
+.empty{text-align:center;padding:48px 16px;color:var(--haze)}
+.empty-icon{font-size:2.6rem;margin-bottom:10px}
 
 /* setup */
-.setup{max-width:480px;margin:40px auto;background:var(--wh);border-radius:var(--r);border:1px solid var(--bd);padding:28px;box-shadow:var(--sh)}
-.setup h2{font-size:1.2rem;font-weight:800;margin-bottom:8px}
-.setup p{font-size:.84rem;color:var(--t4);line-height:1.7;margin-bottom:14px}
-.setup ol{padding-left:18px;font-size:.84rem;color:var(--t6);line-height:2.1}
-.setup ol li{padding-left:4px}
-.irow{display:flex;gap:8px;align-items:flex-end;margin-top:14px}
-.irow .fi{flex:1}
-code.tag{background:var(--g1);padding:1px 6px;border-radius:4px;font-size:.82em}
+.setup{max-width:500px;margin:36px auto;background:var(--white);border-radius:var(--r);border:1px solid var(--bd);padding:30px;box-shadow:var(--sh)}
+.setup h2{font-size:1.2rem;font-weight:800;margin-bottom:9px;color:var(--forest)}
+.setup p{font-size:.84rem;color:var(--mist);line-height:1.75;margin-bottom:14px}
+.setup ol{padding-left:18px;font-size:.84rem;color:var(--forest2);line-height:2.2}
+code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;color:var(--forest2)}
 
-/* error box */
-.errbox{max-width:460px;margin:40px auto;background:var(--wh);border-radius:var(--r);border:1.5px solid #fca5a5;padding:22px;box-shadow:var(--sh)}
-.errbox h3{font-size:1rem;font-weight:800;color:#b91c1c;margin-bottom:8px}
-.errbox p{font-size:.86rem;color:var(--t6);margin-bottom:14px;line-height:1.6}
+/* errbox */
+.errbox{max-width:470px;margin:36px auto;background:var(--white);border-radius:var(--r);border:1.5px solid #ffcdd2;padding:24px;box-shadow:var(--sh)}
+.errbox h3{font-size:1rem;font-weight:800;color:#c62828;margin-bottom:8px}
+.errbox p{font-size:.85rem;color:var(--forest2);margin-bottom:16px;line-height:1.65}
+
+/* color swatches */
+.cpick{display:flex;gap:5px;flex-wrap:wrap}
+.csw{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .12s,border-color .12s;flex-shrink:0}
+.csw:hover{transform:scale(1.18)}
+.csw.on{border-color:var(--ink)!important;transform:scale(1.15)}
 
 @media(max-width:480px){
-  .fgrid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}
-  .frow{grid-template-columns:1fr}
+  .fg{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .fg-row{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 </head>
 <body>
-
 <div class="toasts" id="toasts"></div>
 <div class="mbg" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="mbox">
     <div class="mttl" id="mttl"></div>
     <div class="mbdy" id="mbdy"></div>
-    <div class="mft"  id="mft"></div>
+    <div class="mft" id="mft"></div>
   </div>
 </div>
 <div class="savebar" id="savebar">
-  <span style="font-size:.87rem;font-weight:600;color:#b8d9bc">Đã chọn <strong id="sbc" style="color:#fff">0</strong> hoa</span>
+  <span style="font-size:.86rem;font-weight:600;color:#a5d6a7">Đã chọn <strong id="sbc" style="color:#fff">0</strong> hoa</span>
   <button class="btn btn-p" id="sbtn" onclick="saveTicks()">💾 Lưu</button>
 </div>
 
-<div class="topbar">
-  <span style="font-size:1.3rem">🌺</span>
-  <span class="topbar-logo">Hoa Viên</span>
-  <div class="topbar-space"></div>
-  <div class="sync"><div class="dot" id="dot"></div><span id="synclbl">Kết nối</span></div>
+<div class="bar">
+  <span style="font-size:1.4rem">🌺</span>
+  <span class="bar-logo">Hoa Viên</span>
+  <div class="bar-sp"></div>
+  <div class="bar-sync"><div class="pulse" id="pulse"></div><span id="synclbl">Kết nối</span></div>
 </div>
 
 <div class="wrap" id="app"></div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────
-const CK = 'hv2_url';
-let URL = localStorage.getItem(CK) || '';
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const CK_URL   = 'hv3_url';
+const CK_ADMIN = 'hv3_admin';
+const ADMIN_PW = 'hoavien2024'; // đổi mật khẩu admin ở đây
 
-// ── STATE ───────────────────────────────────────────────────
-let S = {
-  flowers:[], members:[], ticks:{},
-  loaded:false, err:null,
-  page:'dash', fcolor:'all', fq:'',
-  mid:'', msel:new Set(),
-  admin:false,
-};
+let API_URL = localStorage.getItem(CK_URL) || '';
 
-// ── COLORS ──────────────────────────────────────────────────
+// ─── COLORS ────────────────────────────────────────────────────────────────
 const COLS = [
-  {k:'tim',  l:'Tím',   h:'#8b5cf6'},
-  {k:'cam',  l:'Cam',   h:'#f97316'},
+  {k:'hong', l:'Hồng',  h:'#ec4899'},
   {k:'do',   l:'Đỏ',    h:'#ef4444'},
+  {k:'cam',  l:'Cam',   h:'#f97316'},
   {k:'vang', l:'Vàng',  h:'#eab308'},
   {k:'xanh', l:'Xanh',  h:'#22c55e'},
-  {k:'hong', l:'Hồng',  h:'#ec4899'},
+  {k:'lam',  l:'Lam',   h:'#3b82f6'},
+  {k:'tim',  l:'Tím',   h:'#8b5cf6'},
   {k:'trang',l:'Trắng', h:'#94a3b8'},
 ];
 const CM = Object.fromEntries(COLS.map(c=>[c.k,c]));
-const col = k => CM[k] || {k:'trang',l:k||'?',h:'#94a3b8'};
+const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
 
-// ── SYNC DOT ────────────────────────────────────────────────
-const dot = s => {
-  const d=document.getElementById('dot');
-  if(d) d.className='dot '+(s==='load'?'spin':s==='err'?'err':'');
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let S = {
+  flowers:[], members:[], ticks:{},
+  loaded:false, err:null,
+  page:'flowers', fcolor:'all', fq:'',
+  mid:'', msel:new Set(),
+  admin: !!localStorage.getItem(CK_ADMIN),
 };
 
-// ── FETCH WITH TIMEOUT ──────────────────────────────────────
-function ftch(url, opts={}, ms=12000) {
+// ─── PULSE ─────────────────────────────────────────────────────────────────
+const setPulse = s => {
+  const d=document.getElementById('pulse');
+  if(!d) return;
+  d.className='pulse'+(s==='loading'?' loading':s==='err'?' err':'');
+  document.getElementById('synclbl').textContent=
+    s==='loading'?'Đang tải':s==='err'?'Lỗi':'Kết nối';
+};
+
+// ─── FETCH ─────────────────────────────────────────────────────────────────
+function ftch(url, opts={}, ms=14000){
   const c=new AbortController();
   const t=setTimeout(()=>c.abort(),ms);
   return fetch(url,{...opts,signal:c.signal}).finally(()=>clearTimeout(t));
 }
 
-// ── SheetDB helpers ─────────────────────────────────────────
-const base = tab => tab ? URL+'/sheets/'+encodeURIComponent(tab) : URL;
+// ─── SHEETDB API ───────────────────────────────────────────────────────────
+const base = tab => `${API_URL}/sheets/${encodeURIComponent(tab)}`;
 
-async function sGet(tab) {
-  dot('load');
-  try {
-    const r = await ftch(base(tab));
-    const txt = await r.text();
-    dot('');
-    const d = JSON.parse(txt);
-    if(!Array.isArray(d)) { console.warn('sGet '+tab, d); return []; }
-    return d;
-  } catch(e) { dot('err'); console.error('sGet '+tab, e.message); return null; }
+async function sGet(tab){
+  try{
+    const r=await ftch(base(tab));
+    if(!r.ok) return null;
+    const d=await r.json();
+    return Array.isArray(d)?d:null;
+  }catch(e){return null;}
 }
 
-async function sPost(tab, data) {
-  dot('load');
-  try {
-    const r = await ftch(base(tab), {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({data}),
-    });
-    dot(''); return await r.json();
-  } catch(e) { dot('err'); return {error:e.message}; }
+async function sPost(tab,data){
+  try{
+    const r=await ftch(base(tab),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data})});
+    return await r.json();
+  }catch(e){return{error:e.message};}
 }
 
-async function sPatch(tab, col, val, data) {
-  dot('load');
-  try {
-    const r = await ftch(base(tab)+'/'+encodeURIComponent(col)+'/'+encodeURIComponent(val), {
-      method:'PATCH',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({data}),
-    });
-    dot(''); return await r.json();
-  } catch(e) { dot('err'); return {error:e.message}; }
+async function sPatch(tab,col,val,data){
+  try{
+    const r=await ftch(`${base(tab)}/${encodeURIComponent(col)}/${encodeURIComponent(val)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({data})});
+    return await r.json();
+  }catch(e){return{error:e.message};}
 }
 
-async function sDel(tab, col, val) {
-  dot('load');
-  try {
-    const r = await ftch(base(tab)+'/'+encodeURIComponent(col)+'/'+encodeURIComponent(val), {method:'DELETE'});
-    dot(''); return await r.json();
-  } catch(e) { dot('err'); return {error:e.message}; }
+async function sDel(tab,col,val){
+  try{
+    const r=await ftch(`${base(tab)}/${encodeURIComponent(col)}/${encodeURIComponent(val)}`,{method:'DELETE'});
+    return await r.json();
+  }catch(e){return{error:e.message};}
 }
 
-// ── LOAD ALL ────────────────────────────────────────────────
-async function loadAll() {
-  if(!URL){ S.loaded=true; return; }
-  S.loaded=false; S.err=null;
-  try {
-    const [fl,mb,tk] = await Promise.all([sGet('Flowers'),sGet('Members'),sGet('Ticks')]);
-    if(fl===null || mb===null || tk===null){
-      S.err='Không kết nối được SheetDB. Kiểm tra URL hoặc header trong Sheets.';
-      S.loaded=true; return;
-    }
-    S.flowers = fl.filter(r=>r.id&&r.name).map(r=>({
-      id:r.id, name:r.name, color:r.color||'trang',
-      imgUrl:r.imgUrl||'', sortOrder:Number(r.sortOrder)||0,
-    })).sort((a,b)=>a.sortOrder-b.sortOrder);
-    S.members = mb.filter(r=>r.id&&r.displayName).map(r=>({
-      id:r.id, displayName:r.displayName, alias:r.alias||'', year:r.year||'',
-    }));
-    S.ticks={};
-    tk.filter(r=>r.memberId).forEach(r=>{
-      S.ticks[r.memberId] = r.flowerIds?r.flowerIds.split(',').filter(Boolean):[];
-    });
-    S.loaded=true;
-  } catch(e) {
-    S.err='Lỗi: '+e.message; S.loaded=true;
+// ─── AUTO SETUP HEADERS ────────────────────────────────────────────────────
+// SheetDB tự tạo header khi POST lần đầu — không cần làm gì thêm.
+// Tuy nhiên ta kiểm tra xem sheet có trả về mảng hợp lệ không.
+
+// ─── LOAD ALL ──────────────────────────────────────────────────────────────
+async function loadAll(){
+  if(!API_URL){S.loaded=true;return;}
+  S.loaded=false; S.err=null; setPulse('loading');
+  const [fl,mb,tk]=await Promise.all([sGet('Flowers'),sGet('Members'),sGet('Ticks')]);
+  setPulse('');
+  if(fl===null||mb===null||tk===null){
+    S.err='Không kết nối được SheetDB. Kiểm tra API URL và quyền truy cập.';
+    S.loaded=true; setPulse('err'); return;
   }
+  S.flowers=fl.filter(r=>r.id&&r.name).map(r=>({
+    id:r.id,name:r.name,color:r.color||'trang',
+    imgUrl:r.imgUrl||'',sortOrder:Number(r.sortOrder)||0,
+  })).sort((a,b)=>a.sortOrder-b.sortOrder);
+  S.members=mb.filter(r=>r.id&&r.displayName).map(r=>({
+    id:r.id,displayName:r.displayName,alias:r.alias||'',year:r.year||'',
+  }));
+  S.ticks={};
+  tk.filter(r=>r.memberId).forEach(r=>{
+    S.ticks[r.memberId]=r.flowerIds?r.flowerIds.split(',').filter(Boolean):[];
+  });
+  S.loaded=true;
 }
 
-// ── TOAST ───────────────────────────────────────────────────
-function toast(msg, type='ok') {
+// ─── TOAST ─────────────────────────────────────────────────────────────────
+function toast(msg,type='ok'){
   const el=document.createElement('div');
   el.className='toast '+type;
   el.textContent=(type==='ok'?'✅ ':type==='er'?'❌ ':'⚠️ ')+msg;
   document.getElementById('toasts').appendChild(el);
-  setTimeout(()=>el.remove(),2600);
+  setTimeout(()=>el.remove(),2700);
 }
 
-// ── MODAL ───────────────────────────────────────────────────
+// ─── MODAL ─────────────────────────────────────────────────────────────────
 function openModal(t,b,f){
   document.getElementById('mttl').innerHTML=t;
   document.getElementById('mbdy').innerHTML=b;
-  document.getElementById('mft').innerHTML=f;
+  document.getElementById('mft').innerHTML=f||'';
   document.getElementById('modal').classList.add('on');
 }
-function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+function closeModal(){document.getElementById('modal').classList.remove('on');}
 
-// ── RENDER ──────────────────────────────────────────────────
-function render() {
+// ─── UTILS ─────────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function uid(){return 'm'+Date.now()+Math.floor(Math.random()*1000);}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+function render(){
   const app=document.getElementById('app');
   if(!app) return;
+
   // save bar
   const sb=document.getElementById('savebar');
-  if(S.page==='tick'&&S.mid){
-    sb.classList.add('on');
-    document.getElementById('sbc').textContent=S.msel.size;
-  } else sb.classList.remove('on');
+  if(S.page==='tick'&&S.mid){sb.classList.add('on');document.getElementById('sbc').textContent=S.msel.size;}
+  else sb.classList.remove('on');
 
-  if(!URL){ app.innerHTML=renderSetup(); return; }
-  if(!S.loaded){ app.innerHTML='<div class="loading"><div class="sp"></div> Đang tải dữ liệu...</div>'; return; }
-  if(S.err){ app.innerHTML=renderErr(); return; }
+  if(!API_URL){app.innerHTML=renderSetup();return;}
+  if(!S.loaded){app.innerHTML='<div class="loading"><div class="sp"></div> Đang tải...</div>';return;}
+  if(S.err){app.innerHTML=renderErr();return;}
 
-  app.innerHTML = renderTabs() + renderPage();
+  app.innerHTML=renderNav()+renderPage();
 }
 
-function renderTabs() {
+function renderNav(){
   const tabs=[
-    {id:'dash',icon:'🏠',l:'Tổng quan'},
-    {id:'flowers',icon:'🌸',l:'Danh sách hoa'},
-    {id:'tick',icon:'✅',l:'Tick hoa'},
-    {id:'members',icon:'👥',l:'Thành viên'},
-    {id:'settings',icon:'⚙️',l:'Cài đặt'},
+    {k:'flowers',l:'🌸 Hoa'},
+    {k:'tick',   l:'✅ Đánh dấu'},
+    {k:'members',l:'👥 Thành viên'},
+    ...(S.admin?[{k:'manage',l:'⚙️ Quản lý'}]:[]),
+    {k:'settings',l:'🔧 Cài đặt'},
   ];
-  return '<div class="tabs">'+
-    tabs.map(t=>`<button class="tab ${S.page===t.id?'on':''}" onclick="go('${t.id}')">${t.icon} ${t.l}</button>`).join('')+
-    `<button class="tab ${S.admin?'pk':''}" onclick="toggleAdmin()">🛡️ ${S.admin?'Admin ON':'Admin'}</button>`+
-  '</div>';
+  return `<div class="nav">${tabs.map(t=>`<button class="nvb ${S.page===t.k?'on':''}" onclick="goto('${t.k}')">${t.l}</button>`).join('')}</div>`;
 }
 
-function renderPage() {
-  if(S.page==='dash')     return pageDash();
-  if(S.page==='flowers')  return pageFlowers();
-  if(S.page==='tick')     return pageTick();
-  if(S.page==='members')  return pageMembers();
-  if(S.page==='settings') return pageSettings();
+function goto(p){S.page=p;render();}
+
+function renderPage(){
+  if(S.page==='flowers') return pageFlowers();
+  if(S.page==='tick')    return pageTick();
+  if(S.page==='members') return pageMembers();
+  if(S.page==='manage')  return pageManage();
+  if(S.page==='settings')return pageSettings();
   return '';
 }
 
-function go(p){ S.page=p; render(); }
-function toggleAdmin(){ S.admin=!S.admin; render(); }
+// ─── FLOWERS PAGE ──────────────────────────────────────────────────────────
+function pageFlowers(){
+  const q=S.fq.trim().toLowerCase();
+  let list=S.flowers;
+  if(S.fcolor!=='all') list=list.filter(f=>f.color===S.fcolor);
+  if(q) list=list.filter(f=>f.name.toLowerCase().includes(q));
 
-// ── SETUP ───────────────────────────────────────────────────
-function renderSetup() {
-  return `<div class="setup">
-    <h2>🌺 Chào mừng đến Hoa Viên!</h2>
-    <p>Dữ liệu lưu trong Google Sheets qua <b>SheetDB</b>. 3 bước setup:</p>
-    <ol>
-      <li>Tạo Google Sheets mới → tạo 3 tab tên chính xác: <code class="tag">Flowers</code> <code class="tag">Members</code> <code class="tag">Ticks</code> (để trống)</li>
-      <li>Vào <b>sheetdb.io</b> → đăng nhập Google → <b>Create new API</b> → chọn file Sheets → copy URL</li>
-      <li>Dán URL vào đây → bấm <b>Kết nối</b></li>
-    </ol>
-    <div class="irow">
-      <input class="fi" id="su" placeholder="https://sheetdb.io/api/v1/..." />
-      <button class="btn btn-g" onclick="doConnect()">Kết nối</button>
-    </div>
-    <div id="su-msg" style="margin-top:10px;font-size:.82rem;color:var(--t4)"></div>
-  </div>`;
-}
+  // group by color
+  const groups={};
+  list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
 
-async function doConnect() {
-  const v=document.getElementById('su').value.trim();
-  if(!v.startsWith('https://')){ toast('URL không hợp lệ','wn'); return; }
-  URL=v; localStorage.setItem(CK,URL);
-  document.getElementById('su-msg').textContent='⏳ Đang kết nối...';
-  await loadAll();
-  render();
-}
-
-// ── ERROR ───────────────────────────────────────────────────
-function renderErr() {
-  return `<div class="errbox">
-    <h3>⚠️ Không tải được dữ liệu</h3>
-    <p>${esc(S.err)}</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-g" onclick="retry()">🔄 Thử lại</button>
-      <button class="btn btn-o" onclick="go('settings')">⚙️ Cài đặt</button>
-      <button class="btn btn-o" onclick="showHeaderHelp()">🛠️ Xem header cần gõ</button>
-    </div>
-  </div>`;
-}
-
-async function retry(){ S.loaded=false; S.err=null; render(); await loadAll(); render(); }
-
-function showHeaderHelp(){
-  openModal('🛠️ Header cần gõ vào Sheets',
-    '<b>Tab Flowers</b> — gõ vào hàng 1, mỗi từ 1 ô:<br>'+
-    '<code style="display:block;background:#f1f5f1;padding:6px 10px;border-radius:6px;margin:5px 0 12px;font-size:.82rem">id &nbsp;|&nbsp; name &nbsp;|&nbsp; color &nbsp;|&nbsp; imgUrl &nbsp;|&nbsp; sortOrder</code>'+
-    '<b>Tab Members</b>:<br>'+
-    '<code style="display:block;background:#f1f5f1;padding:6px 10px;border-radius:6px;margin:5px 0 12px;font-size:.82rem">id &nbsp;|&nbsp; displayName &nbsp;|&nbsp; alias &nbsp;|&nbsp; year</code>'+
-    '<b>Tab Ticks</b>:<br>'+
-    '<code style="display:block;background:#f1f5f1;padding:6px 10px;border-radius:6px;margin:5px 0;font-size:.82rem">memberId &nbsp;|&nbsp; flowerIds</code>',
-    '<button class="btn btn-g" onclick="closeModal();retry()">✅ Đã gõ xong, thử lại</button>'+
-    '<button class="btn btn-o" onclick="closeModal()">Đóng</button>'
-  );
-}
-
-// ── DASHBOARD ───────────────────────────────────────────────
-function pageDash() {
-  const ttl=S.flowers.length, tmb=S.members.length;
-  const ttk=Object.values(S.ticks).reduce((s,a)=>s+a.length,0);
-  const byC={};
-  S.flowers.forEach(f=>{ byC[f.color]=(byC[f.color]||0)+1; });
-  const sorted=[...S.members].sort((a,b)=>(S.ticks[b.id]||[]).length-(S.ticks[a.id]||[]).length);
-  const max=Math.max(...sorted.map(m=>(S.ticks[m.id]||[]).length),1);
-  return `
-  <div class="stats">
-    <div class="scard"><div class="sval">${ttl}</div><div class="slbl">Loài hoa</div></div>
-    <div class="scard"><div class="sval">${tmb}</div><div class="slbl">Thành viên</div></div>
-    <div class="scard"><div class="sval">${ttk}</div><div class="slbl">Lượt tick</div></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <div style="font-size:.78rem;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Hoa theo phẩm màu</div>
-    ${COLS.filter(c=>byC[c.k]).map(c=>{
-      const n=byC[c.k]||0, pct=ttl?Math.round(n/ttl*100):0;
-      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="width:38px;font-size:.76rem;font-weight:700;color:${c.h}">${c.l}</span>
-        <div style="flex:1;height:7px;border-radius:4px;background:var(--g0);overflow:hidden">
-          <div style="width:${pct}%;height:100%;border-radius:4px;background:${c.h}"></div>
-        </div>
-        <span style="font-size:.75rem;font-weight:700;color:var(--t4);width:26px;text-align:right">${n}</span>
-      </div>`;
-    }).join('')}
-  </div>
-  <div class="card">
-    <div style="font-size:.78rem;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Bảng xếp hạng</div>
-    ${sorted.length===0?'<div class="empty"><div class="ei">👥</div>Chưa có thành viên</div>':
-    '<table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th><th>Tiến độ</th></tr></thead><tbody>'+
-    sorted.map((m,i)=>{
-      const n=(S.ticks[m.id]||[]).length, pct=S.flowers.length?Math.round(n/S.flowers.length*100):0;
-      return `<tr><td style="width:32px;color:var(--t2);font-weight:800">${i+1}</td>
-        <td><div style="font-weight:700">${esc(m.displayName)}</div><div style="font-size:.76rem;color:var(--t4)">${m.alias?esc(m.alias):''}${m.year?' · '+m.year:''}</div></td>
-        <td><div class="mbar-w"><div class="mbar"><div class="mbar-f" style="width:${pct}%"></div></div><span class="mlbl">${n} hoa</span></div></td>
-      </tr>`;
-    }).join('')+'</tbody></table>'}
-  </div>`;
-}
-
-// ── FLOWERS PAGE ────────────────────────────────────────────
-function pageFlowers() {
-  return (S.admin ? addFlowerForm() : '') +
-  `<div class="sbar"><span class="sico">🔍</span>
-    <input class="fi" style="padding-left:34px" placeholder="Tìm tên hoa…" value="${esc(S.fq)}" oninput="S.fq=this.value;renderFList()">
-  </div>
-  <div class="cfbar">
-    <span class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFC('all')">Tất cả</span>
-    ${COLS.map(c=>`<span class="ctab ${S.fcolor===c.k?'on':''}" style="${S.fcolor===c.k?'background:'+c.h+'18;color:'+c.h+';border-color:'+c.h:''}" onclick="setFC('${c.k}')">${c.l}</span>`).join('')}
-  </div>
-  <div id="flist">${flistHtml()}</div>`;
-}
-
-function setFC(k){ S.fcolor=k; document.querySelectorAll('.ctab').forEach(e=>e.classList.remove('on')); event.target.classList.add('on'); renderFList(); }
-function renderFList(){ const el=document.getElementById('flist'); if(el) el.innerHTML=flistHtml(); }
-
-function flistHtml() {
-  const q=S.fq.toLowerCase();
-  const byC={};
+  // owner map
+  const owners={};
   S.flowers.forEach(f=>{
-    if(S.fcolor!=='all'&&f.color!==S.fcolor) return;
-    if(q&&!f.name.toLowerCase().includes(q)) return;
-    if(!byC[f.color]) byC[f.color]=[];
-    byC[f.color].push(f);
+    const own=S.members.filter(m=>(S.ticks[m.id]||[]).includes(f.id)).map(m=>m.displayName);
+    owners[f.id]=own;
   });
-  if(!Object.keys(byC).length) return '<div class="empty"><div class="ei">🔍</div>Không tìm thấy hoa nào</div>';
-  return COLS.filter(c=>byC[c.k]).map(c=>`
-    <div class="gh"><div class="gh-bar" style="background:${c.h}"></div><h2>${c.l}</h2><span class="cnt">${byC[c.k].length}</span></div>
-    <div class="fgrid">${byC[c.k].map(f=>flowerCard(f)).join('')}</div>
-  `).join('');
-}
 
-function flowerCard(f) {
-  const owners=getOwners(f.id);
-  const c=col(f.color);
-  return `<div class="fc">
-    ${S.admin?`<button onclick="confirmDelFlower('${f.id}')" style="position:absolute;top:6px;right:6px;z-index:5;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;color:#ef4444;font-size:12px;display:flex;align-items:center;justify-content:center">✕</button>`:''}
-    <div class="img-wrap" style="position:relative">
-      ${f.imgUrl
-        ? `<img src="${esc(f.imgUrl)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'><span class=\\'letter\\' style=\\'color:${c.h}\\'>${esc(f.name.charAt(0))}</span><span class=\\'lname\\'>${esc(f.name)}</span></div>'">`
-        : `<div class="no-img"><span class="letter" style="color:${c.h}">${esc(f.name.charAt(0))}</span><span class="lname">${esc(f.name)}</span></div>`}
-    </div>
-    <div class="fbody">
-      <div class="fname">${esc(f.name)}</div>
-      <span class="badge" style="background:${c.h}18;color:${c.h}"><span class="bdot" style="background:${c.h}"></span>${c.l}</span>
-      <div class="fcount">${owners.length?owners.length+' người sở hữu':'Chưa ai'}</div>
-      <div class="fowns">${owners.slice(0,5).map(esc).join(', ')}${owners.length>5?'…':''}</div>
-    </div>
+  const colorFilter=`<div class="cfbar">
+    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="S.fcolor='all';render()" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${S.flowers.length})</button>
+    ${COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
+      const cnt=S.flowers.filter(f=>f.color===c.k).length;
+      const on=S.fcolor===c.k;
+      return `<button class="ctab ${on?'on':''}" onclick="S.fcolor='${c.k}';render()" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l} (${cnt})</button>`;
+    }).join('')}
   </div>`;
-}
 
-function getOwners(fid){ return S.members.filter(m=>(S.ticks[m.id]||[]).includes(fid)).map(m=>m.displayName); }
+  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="fq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="S.fq=this.value;render()"></div>`;
 
-// add flower form
-let _ac='';
-function addFlowerForm(){
-  return `<div class="card" style="margin-bottom:18px">
-    <div style="font-size:.85rem;font-weight:800;color:var(--t6);margin-bottom:12px">➕ Thêm hoa mới</div>
-    <div class="frow">
-      <div class="fg" style="grid-column:1/-1"><label class="fl">Tên hoa</label><input class="fi" id="af-n" placeholder="Ví dụ: Hoa anh thảo xanh"></div>
-      <div class="fg"><label class="fl">Phẩm màu</label>
-        <div class="cpick">${COLS.map(c=>`<span class="copt" id="cp-${c.k}" onclick="pickC('${c.k}')">${c.l}</span>`).join('')}</div>
-      </div>
-      <div class="fg"><label class="fl">URL ảnh <span style="color:var(--t2);font-weight:400">(tuỳ chọn)</span></label><input class="fi" id="af-i" placeholder="https://..."></div>
-    </div>
-    <div style="margin-top:12px"><button class="btn btn-g" id="af-btn" onclick="doAddFlower()">Thêm hoa</button></div>
-  </div>`;
-}
+  if(!list.length) return colorFilter+searchBar+`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy hoa nào</div>`;
 
-function pickC(k){
-  _ac=k; const c=col(k);
-  document.querySelectorAll('.copt').forEach(e=>{ e.style.cssText=''; e.className='copt'; });
-  const el=document.getElementById('cp-'+k);
-  if(el){ el.style.background=c.h+'20'; el.style.color=c.h; el.style.borderColor=c.h; el.style.borderWidth='2px'; }
-}
-
-async function doAddFlower(){
-  const name=document.getElementById('af-n')?.value.trim();
-  const imgUrl=document.getElementById('af-i')?.value.trim();
-  if(!name){ toast('Nhập tên hoa!','wn'); return; }
-  if(!_ac){ toast('Chọn phẩm màu!','wn'); return; }
-  const btn=document.getElementById('af-btn'); btn.disabled=true; btn.innerHTML='<div class="sp"></div>';
-  const id='f'+Date.now();
-  const r=await sPost('Flowers',{id,name,color:_ac,imgUrl:imgUrl||'',sortOrder:S.flowers.length+1});
-  if(!r||r.error){ toast((r&&r.error)||'Lỗi kết nối','er'); btn.disabled=false; btn.innerHTML='Thêm hoa'; return; }
-  toast('Đã thêm: '+name); _ac=''; await loadAll(); render();
-}
-
-async function confirmDelFlower(id){
-  const f=S.flowers.find(x=>x.id===id);
-  openModal('⚠️ Xóa hoa',`Xóa <b>${esc(f?.name||id)}</b>? Dữ liệu tick cũng bị xóa.`,
-    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelFlower('${id}')">Xóa</button>`);
-}
-async function doDelFlower(id){
-  closeModal();
-  await sDel('Flowers','id',id);
-  const aff=Object.entries(S.ticks).filter(([,ids])=>ids.includes(id));
-  await Promise.all(aff.map(([mid,ids])=>sPatch('Ticks','memberId',mid,{flowerIds:ids.filter(x=>x!==id).join(',')})));
-  toast('Đã xóa hoa'); await loadAll(); render();
-}
-
-// ── TICK PAGE ───────────────────────────────────────────────
-function pageTick(){
-  const opts=S.members.map(m=>`<option value="${m.id}" ${m.id===S.mid?'selected':''}>${esc(m.displayName)}${m.alias?' - '+m.alias:''}${m.year?' ('+m.year+')':''}</option>`).join('');
-  return `
-  <div class="card" style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <label class="fl" style="white-space:nowrap">Bạn là:</label>
-    <select class="fi" style="flex:1;min-width:180px;max-width:320px" onchange="onMember(this.value)">
-      <option value="">-- Chọn thành viên --</option>${opts}
-    </select>
-    ${S.mid?`<span style="background:var(--pkl);color:var(--pkd);padding:4px 11px;border-radius:var(--rp);font-size:.76rem;font-weight:700;white-space:nowrap">🌸 ${S.msel.size} hoa</span>`:''}
-  </div>
-  ${!S.mid
-    ? '<div class="empty"><div class="ei">👆</div>Chọn tên bạn để bắt đầu tick</div>'
-    : `<div class="sbar"><span class="sico">🔍</span><input class="fi" style="padding-left:34px" placeholder="Tìm hoa để tick…" oninput="renderTList(this.value)"></div>
-       <div id="tlist">${tlistHtml('')}</div>`
-  }`;
-}
-
-function onMember(id){
-  S.mid=id; S.msel=id?new Set(S.ticks[id]||[]):new Set();
-  render();
-}
-
-function tlistHtml(q){
-  const lq=(q||'').toLowerCase();
-  const byC={};
-  S.flowers.forEach(f=>{ if(!lq||f.name.toLowerCase().includes(lq)){if(!byC[f.color])byC[f.color]=[];byC[f.color].push(f);} });
-  if(!Object.keys(byC).length) return '<div class="empty"><div class="ei">🔍</div>Không tìm thấy</div>';
-  return COLS.filter(c=>byC[c.k]).map(c=>`
-    <div class="gh"><div class="gh-bar" style="background:${c.h}"></div><h2>${c.l}</h2><span class="cnt">${byC[c.k].length}</span></div>
-    <div class="fgrid">${byC[c.k].map(f=>{
-      const tk=S.msel.has(f.id); const cv=col(f.color);
-      return `<div class="fc tc ${tk?'ticked':''}" onclick="toggleTick('${f.id}')">
-        <div class="img-wrap" style="position:relative">
-          ${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<div class="no-img"><span class="letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span><span class="lname">${esc(f.name)}</span></div>`}
-          <div class="chk" id="chk-${f.id}">${tk?'✓':''}</div>
-        </div>
-        <div class="fbody"><div class="fname">${esc(f.name)}</div>
-          <span class="badge" style="background:${cv.h}18;color:${cv.h}"><span class="bdot" style="background:${cv.h}"></span>${cv.l}</span>
+  const html=Object.entries(groups).map(([ck,flowers])=>{
+    const cv=col(ck);
+    return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${flowers.length}</span></div>
+    <div class="fg">${flowers.map(f=>{
+      const own=owners[f.id]||[];
+      return `<div class="fc">
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
+        <div class="fc-body">
+          <div class="fc-name">${esc(f.name)}</div>
+          <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
+          ${own.length?`<div class="fc-owns">👤 ${own.slice(0,3).map(n=>esc(n)).join(', ')}${own.length>3?` +${own.length-3}`:''}</div>`:''}
         </div>
       </div>`;
-    }).join('')}</div>
-  `).join('');
+    }).join('')}</div>`;
+  }).join('');
+
+  return colorFilter+searchBar+html;
 }
 
-function renderTList(q){ const el=document.getElementById('tlist'); if(el) el.innerHTML=tlistHtml(q); }
+// ─── TICK PAGE ─────────────────────────────────────────────────────────────
+function pageTick(){
+  const picker=`<div class="mpicker">
+    <div class="mpicker-title">👤 Chọn tên của bạn</div>
+    <div class="mlist">${S.members.length===0?'<span style="font-size:.83rem;color:var(--mist)">Chưa có thành viên nào</span>':
+      S.members.map(m=>`<button class="mchip ${S.mid===m.id?'on':''}" onclick="pickMember('${m.id}')">${esc(m.displayName)}</button>`).join('')}
+    </div>
+  </div>`;
+
+  if(!S.mid) return picker+`<div class="empty"><div class="empty-icon">👆</div>Chọn tên để đánh dấu hoa bạn có</div>`;
+
+  const q=S.fq.trim().toLowerCase();
+  let list=S.flowers;
+  if(S.fcolor!=='all') list=list.filter(f=>f.color===S.fcolor);
+  if(q) list=list.filter(f=>f.name.toLowerCase().includes(q));
+  const groups={};
+  list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
+
+  const colorFilter=`<div class="cfbar">
+    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="S.fcolor='all';render()" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả</button>
+    ${COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
+      const on=S.fcolor===c.k;
+      return `<button class="ctab ${on?'on':''}" onclick="S.fcolor='${c.k}';render()" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
+    }).join('')}
+  </div>`;
+
+  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="S.fq=this.value;render()"></div>`;
+
+  const selectedMember=S.members.find(m=>m.id===S.mid);
+  const info=`<div style="font-size:.82rem;color:var(--mist);margin-bottom:14px">Đang đánh dấu cho: <strong style="color:var(--forest)">${esc(selectedMember?.displayName||'')}</strong> — ${S.msel.size}/${S.flowers.length} hoa</div>`;
+
+  const html=Object.entries(groups).map(([ck,flowers])=>{
+    const cv=col(ck);
+    return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${flowers.length}</span></div>
+    <div class="fg">${flowers.map(f=>{
+      const tk=S.msel.has(f.id);
+      return `<div class="fc tc ${tk?'ticked':''}" onclick="toggleTick('${f.id}')">
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}
+        <div class="chk">${tk?'✓':''}</div></div>
+        <div class="fc-body"><div class="fc-name">${esc(f.name)}</div>
+        <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span></div>
+      </div>`;
+    }).join('')}</div>`;
+  }).join('');
+
+  return picker+info+colorFilter+searchBar+(list.length?html:`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`);
+}
+
+function pickMember(id){
+  S.mid=id;
+  // load existing ticks for this member
+  S.msel=new Set(S.ticks[id]||[]);
+  render();
+}
 
 function toggleTick(id){
-  if(!S.mid){ toast('Chọn tên trước!','wn'); return; }
+  if(!S.mid){toast('Chọn tên trước!','wn');return;}
   S.msel.has(id)?S.msel.delete(id):S.msel.add(id);
-  const card=document.querySelector(`.tc[onclick="toggleTick('${id}')"]`);
-  if(card){ card.classList.toggle('ticked',S.msel.has(id)); const c=card.querySelector('.chk'); if(c) c.textContent=S.msel.has(id)?'✓':''; }
-  const bc=document.querySelector('.savebar span strong'); if(bc) bc.textContent=S.msel.size;
-  const badge=document.querySelector('[style*="pkl"]'); if(badge) badge.textContent='🌸 '+S.msel.size+' hoa';
+  // update card inline without full re-render
+  const cards=document.querySelectorAll(`.tc`);
+  cards.forEach(card=>{
+    const fn=card.getAttribute('onclick');
+    if(fn&&fn.includes(`'${id}'`)){
+      const ticked=S.msel.has(id);
+      card.classList.toggle('ticked',ticked);
+      const chk=card.querySelector('.chk');
+      if(chk) chk.textContent=ticked?'✓':'';
+    }
+  });
+  document.getElementById('sbc').textContent=S.msel.size;
 }
 
 async function saveTicks(){
-  if(!S.mid){ toast('Chọn thành viên trước!','wn'); return; }
-  const btn=document.getElementById('sbtn'); btn.disabled=true; btn.innerHTML='<div class="sp"></div>';
+  if(!S.mid){toast('Chọn thành viên trước!','wn');return;}
+  const btn=document.getElementById('sbtn');
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div>';
   const fids=[...S.msel].join(',');
   const exists=S.ticks.hasOwnProperty(S.mid);
-  const r=exists ? await sPatch('Ticks','memberId',S.mid,{flowerIds:fids}) : await sPost('Ticks',{memberId:S.mid,flowerIds:fids});
-  if(r&&!r.error){ S.ticks[S.mid]=[...S.msel]; toast('Lưu thành công! 🌸'); }
-  else toast((r&&r.error)||'Lỗi kết nối','er');
-  btn.disabled=false; btn.innerHTML='💾 Lưu';
+  setPulse('loading');
+  const r=exists
+    ?await sPatch('Ticks','memberId',S.mid,{flowerIds:fids})
+    :await sPost('Ticks',{memberId:S.mid,flowerIds:fids});
+  setPulse('');
+  if(r&&!r.error){
+    S.ticks[S.mid]=[...S.msel];
+    toast('Đã lưu 🌸');
+  } else toast((r&&r.error)||'Lỗi kết nối','er');
+  btn.disabled=false;btn.innerHTML='💾 Lưu';
 }
 
-// ── MEMBERS PAGE ────────────────────────────────────────────
+// ─── MEMBERS PAGE ──────────────────────────────────────────────────────────
 function pageMembers(){
   const sorted=[...S.members].sort((a,b)=>(S.ticks[b.id]||[]).length-(S.ticks[a.id]||[]).length);
-  return (S.admin?addMemberForm():'')+
-  `<div class="card">
-    ${sorted.length===0?'<div class="empty"><div class="ei">👥</div>Chưa có thành viên</div>':
-    '<table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th><th>Sở hữu</th>'+(S.admin?'<th></th>':'')+'</tr></thead><tbody>'+
-    sorted.map((m,i)=>{
-      const n=(S.ticks[m.id]||[]).length, pct=S.flowers.length?Math.round(n/S.flowers.length*100):0;
-      return `<tr><td style="color:var(--t2);font-weight:800;width:30px">${i+1}</td>
-        <td><div style="font-weight:700">${esc(m.displayName)}</div><div style="font-size:.75rem;color:var(--t4)">${m.alias?esc(m.alias):''}${m.year?' · '+m.year:''}</div></td>
-        <td><div class="mbar-w"><div class="mbar"><div class="mbar-f" style="width:${pct}%"></div></div><span class="mlbl">${n}/${S.flowers.length}</span></div></td>
-        ${S.admin?`<td><button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button></td>`:''}
+  const total=S.flowers.length;
+
+  const statsHtml=`<div class="stats">
+    <div class="sc"><div class="sv">${S.members.length}</div><div class="sl">Thành viên</div></div>
+    <div class="sc"><div class="sv">${total}</div><div class="sl">Loài hoa</div></div>
+    <div class="sc"><div class="sv">${total?Math.round(Object.values(S.ticks).reduce((a,v)=>a+v.length,0)/Math.max(S.members.length,1)):0}</div><div class="sl">TB / người</div></div>
+  </div>`;
+
+  const tableHtml=sorted.length===0
+    ?`<div class="empty"><div class="empty-icon">👥</div>Chưa có thành viên</div>`
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th><th>Sở hữu</th></tr></thead><tbody>
+    ${sorted.map((m,i)=>{
+      const n=(S.ticks[m.id]||[]).length;
+      const pct=total?Math.round(n/total*100):0;
+      return `<tr>
+        <td style="color:var(--haze);font-weight:800;width:28px">${i+1}</td>
+        <td><div style="font-weight:700">${esc(m.displayName)}</div>${m.alias||m.year?`<div style="font-size:.74rem;color:var(--mist)">${[m.alias,m.year].filter(Boolean).join(' · ')}</div>`:''}</td>
+        <td><div class="mbar-w"><div class="mbar"><div class="mbar-f" style="width:${pct}%"></div></div><span class="mlbl">${n}/${total}</span></div></td>
       </tr>`;
-    }).join('')+'</tbody></table>'}
+    }).join('')}</tbody></table></div>`;
+
+  return statsHtml+`<div class="card">${tableHtml}</div>`;
+}
+
+// ─── MANAGE PAGE (ADMIN) ───────────────────────────────────────────────────
+function pageManage(){
+  if(!S.admin) return `<div class="empty"><div class="empty-icon">🔒</div>Cần đăng nhập admin</div>`;
+  return manageFlowers()+manageMembers();
+}
+
+function manageFlowers(){
+  const colorSwatches=COLS.map(c=>`<div class="csw" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
+
+  const rows=S.flowers.map(f=>{
+    const cv=col(f.color);
+    const own=(S.ticks?Object.values(S.ticks).filter(ids=>ids.includes(f.id)).length:0);
+    return `<tr>
+      <td><span class="fc-dot" style="background:${cv.h};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px"></span><strong>${esc(f.name)}</strong></td>
+      <td style="font-size:.78rem;color:var(--mist)">${cv.l}</td>
+      <td style="font-size:.78rem;color:var(--mist)">${own} người</td>
+      <td>
+        <button class="ibtn" onclick="openEditFlower('${f.id}')">✏️</button>
+        <button class="ibtn del" onclick="confirmDelFlower('${f.id}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="card-title">🌸 Quản lý hoa <span style="font-size:.76rem;font-weight:600;color:var(--mist)">(${S.flowers.length})</span>
+      <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddFlower()">+ Thêm hoa</button>
+    </div>
+    ${S.flowers.length===0?`<div class="empty"><div class="empty-icon">🌱</div>Chưa có hoa nào</div>`
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên</th><th>Màu</th><th>Sở hữu</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
   </div>`;
 }
 
-function addMemberForm(){
-  return `<div class="card" style="margin-bottom:16px">
-    <div style="font-size:.85rem;font-weight:800;color:var(--t6);margin-bottom:12px">➕ Thêm thành viên</div>
-    <div class="frow">
-      <div class="fg"><label class="fl">Tên hiển thị</label><input class="fi" id="am-d" placeholder="Khánh Ly"></div>
-      <div class="fg"><label class="fl">Tên game</label><input class="fi" id="am-a" placeholder="Mẫn"></div>
-      <div class="fg"><label class="fl">Năm sinh</label><input class="fi" id="am-y" placeholder="1991" maxlength="4"></div>
+function manageMembers(){
+  const rows=S.members.map(m=>`<tr>
+    <td><strong>${esc(m.displayName)}</strong>${m.alias?`<span style="font-size:.74rem;color:var(--mist);margin-left:6px">${esc(m.alias)}</span>`:''}</td>
+    <td style="font-size:.78rem;color:var(--mist)">${m.year||'—'}</td>
+    <td style="font-size:.78rem;color:var(--mist)">${(S.ticks[m.id]||[]).length} hoa</td>
+    <td>
+      <button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button>
+    </td>
+  </tr>`).join('');
+
+  return `<div class="card">
+    <div class="card-title">👥 Quản lý thành viên
+      <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddMember()">+ Thêm</button>
     </div>
-    <div style="margin-top:12px"><button class="btn btn-g" id="am-btn" onclick="doAddMember()">Thêm</button></div>
+    ${S.members.length===0?`<div class="empty"><div class="empty-icon">👤</div>Chưa có thành viên</div>`
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên</th><th>Năm</th><th>Hoa</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
   </div>`;
+}
+
+// ADD / EDIT FLOWER MODAL
+function openAddFlower(){
+  S._editFlowerId=null; S._editColor='hong';
+  const swatches=COLS.map(c=>`<div class="csw ${c.k==='hong'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
+  openModal('🌸 Thêm hoa mới',
+    `<div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" placeholder="Hoa hồng nhung"></div>
+      <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${swatches}</div></div>
+      <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" placeholder="https://..."></div>
+      <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" placeholder="0" value="0"></div>
+    </div>`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
+  );
+}
+
+function openEditFlower(id){
+  const f=S.flowers.find(x=>x.id===id);
+  if(!f) return;
+  S._editFlowerId=id; S._editColor=f.color||'hong';
+  const swatches=COLS.map(c=>`<div class="csw ${c.k===S._editColor?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
+  openModal('✏️ Sửa hoa',
+    `<div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
+      <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${swatches}</div></div>
+      <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" value="${esc(f.imgUrl)}"></div>
+      <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="${f.sortOrder}"></div>
+    </div>`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
+  );
+}
+
+function pickColor(k){
+  S._editColor=k;
+  document.querySelectorAll('.csw').forEach(el=>el.classList.remove('on'));
+  const sw=document.getElementById('sw-'+k);
+  if(sw) sw.classList.add('on');
+}
+
+async function doSaveFlower(){
+  const name=document.getElementById('ef-name')?.value.trim();
+  if(!name){toast('Nhập tên hoa!','wn');return;}
+  const imgUrl=document.getElementById('ef-img')?.value.trim()||'';
+  const sortOrder=Number(document.getElementById('ef-sort')?.value)||0;
+  const color=S._editColor||'hong';
+
+  const mbox=document.querySelector('.mbox');
+  const savebtn=mbox?.querySelectorAll('.btn')[1];
+  if(savebtn){savebtn.disabled=true;savebtn.innerHTML='<div class="sp"></div>';}
+  setPulse('loading');
+
+  let r;
+  if(S._editFlowerId){
+    r=await sPatch('Flowers','id',S._editFlowerId,{name,color,imgUrl,sortOrder});
+  } else {
+    const id='f'+Date.now();
+    r=await sPost('Flowers',{id,name,color,imgUrl,sortOrder});
+  }
+  setPulse('');
+  if(r&&!r.error){
+    closeModal();
+    toast(S._editFlowerId?'Đã cập nhật hoa':'Đã thêm hoa mới');
+    await loadAll(); render();
+  } else {
+    toast((r&&r.error)||'Lỗi lưu dữ liệu','er');
+    if(savebtn){savebtn.disabled=false;savebtn.innerHTML='💾 Lưu';}
+  }
+}
+
+function confirmDelFlower(id){
+  const f=S.flowers.find(x=>x.id===id);
+  openModal('⚠️ Xóa hoa',`Xóa <b>${esc(f?.name||id)}</b>? Dữ liệu tick liên quan sẽ không bị xóa.`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelFlower('${id}')">Xóa</button>`);
+}
+async function doDelFlower(id){
+  closeModal(); setPulse('loading');
+  await sDel('Flowers','id',id);
+  setPulse('');
+  toast('Đã xóa hoa'); await loadAll(); render();
+}
+
+// ADD MEMBER MODAL
+function openAddMember(){
+  openModal('👤 Thêm thành viên',
+    `<div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg-col"><label class="fl">Tên hiển thị *</label><input class="fi" id="am-d" placeholder="Khánh Ly"></div>
+      <div class="fg-col"><label class="fl">Tên game (bí danh)</label><input class="fi" id="am-a" placeholder="Mẫn"></div>
+      <div class="fg-col"><label class="fl">Năm sinh</label><input class="fi" id="am-y" placeholder="1991" maxlength="4" type="number"></div>
+    </div>`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doAddMember()">Thêm</button>`
+  );
 }
 
 async function doAddMember(){
   const d=document.getElementById('am-d')?.value.trim();
-  const a=document.getElementById('am-a')?.value.trim();
-  const y=document.getElementById('am-y')?.value.trim();
-  if(!d){ toast('Nhập tên!','wn'); return; }
-  if(S.members.find(m=>m.displayName===d&&m.alias===(a||''))){ toast('Thành viên đã tồn tại','wn'); return; }
-  const btn=document.getElementById('am-btn'); btn.disabled=true; btn.innerHTML='<div class="sp"></div>';
-  const r=await sPost('Members',{id:'m'+Date.now(),displayName:d,alias:a||'',year:y||''});
-  if(!r||r.error){ toast((r&&r.error)||'Lỗi','er'); btn.disabled=false; btn.innerHTML='Thêm'; return; }
-  toast('Đã thêm: '+d); await loadAll(); render();
+  const a=document.getElementById('am-a')?.value.trim()||'';
+  const y=document.getElementById('am-y')?.value.trim()||'';
+  if(!d){toast('Nhập tên hiển thị!','wn');return;}
+  if(S.members.find(m=>m.displayName===d)){toast('Tên đã tồn tại!','wn');return;}
+  const savebtn=document.querySelector('.mbox .btn-g');
+  if(savebtn){savebtn.disabled=true;savebtn.innerHTML='<div class="sp"></div>';}
+  setPulse('loading');
+  const r=await sPost('Members',{id:uid(),displayName:d,alias:a,year:y});
+  setPulse('');
+  if(!r||r.error){toast((r&&r.error)||'Lỗi','er');if(savebtn){savebtn.disabled=false;savebtn.innerHTML='Thêm';}return;}
+  closeModal(); toast('Đã thêm: '+d);
+  await loadAll(); render();
 }
 
-async function confirmDelMember(id){
+function confirmDelMember(id){
   const m=S.members.find(x=>x.id===id);
-  openModal('⚠️ Xóa thành viên',`Xóa <b>${esc(m?.displayName||id)}</b>? Dữ liệu tick cũng bị xóa.`,
+  openModal('⚠️ Xóa thành viên',`Xóa <b>${esc(m?.displayName||id)}</b>? Dữ liệu tick của thành viên cũng bị xóa.`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelMember('${id}')">Xóa</button>`);
 }
 async function doDelMember(id){
-  closeModal();
-  await sDel('Members','id',id);
-  await sDel('Ticks','memberId',id);
-  if(S.mid===id){ S.mid=''; S.msel=new Set(); }
+  closeModal(); setPulse('loading');
+  await Promise.all([sDel('Members','id',id),sDel('Ticks','memberId',id)]);
+  setPulse('');
+  if(S.mid===id){S.mid='';S.msel=new Set();}
   toast('Đã xóa thành viên'); await loadAll(); render();
 }
 
-// ── SETTINGS PAGE ───────────────────────────────────────────
+// ─── SETTINGS PAGE ─────────────────────────────────────────────────────────
 function pageSettings(){
-  return `<div class="card" style="margin-bottom:12px">
-    <div style="font-size:.85rem;font-weight:800;color:var(--t6);margin-bottom:10px">🔗 SheetDB URL</div>
-    <div class="irow">
-      <input class="fi" id="cfg-u" value="${esc(URL)}" placeholder="https://sheetdb.io/api/v1/...">
-      <button class="btn btn-g" onclick="updateUrl()">Lưu</button>
-    </div>
-    <p style="font-size:.76rem;color:var(--t2);margin-top:8px">Lấy URL tại sheetdb.io sau khi kết nối Google Sheets.</p>
+  const adminSection=S.admin
+    ?`<div class="card" style="margin-bottom:14px">
+        <div class="card-title">🔓 Admin đang hoạt động</div>
+        <p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Bạn có toàn quyền quản lý dữ liệu.</p>
+        <button class="btn btn-r btn-sm" onclick="doLogout()">Đăng xuất admin</button>
+      </div>`
+    :`<div class="card" style="margin-bottom:14px">
+        <div class="card-title">🔒 Đăng nhập Admin</div>
+        <div class="irow"><input class="fi" id="pw" type="password" placeholder="Mật khẩu admin"><button class="btn btn-g" onclick="doLogin()">Vào</button></div>
+      </div>`;
+
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="card-title">🔗 SheetDB API URL</div>
+    <div class="irow"><input class="fi" id="cfg-u" value="${esc(API_URL)}" placeholder="https://sheetdb.io/api/v1/xxxxxxxxxx"><button class="btn btn-g" onclick="updateUrl()">Lưu</button></div>
+    <p style="font-size:.76rem;color:var(--haze);margin-top:8px">Lấy URL tại <strong>sheetdb.io</strong> sau khi kết nối Google Sheets.</p>
   </div>
-  <div class="card" style="margin-bottom:12px">
-    <div style="font-size:.85rem;font-weight:800;color:var(--t6);margin-bottom:10px">🛠️ Header cần có trong Sheets</div>
-    <div style="font-size:.82rem;color:var(--t6);line-height:2">
-      <b>Flowers:</b> <code style="background:var(--g1);padding:1px 5px;border-radius:4px">id | name | color | imgUrl | sortOrder</code><br>
-      <b>Members:</b> <code style="background:var(--g1);padding:1px 5px;border-radius:4px">id | displayName | alias | year</code><br>
-      <b>Ticks:</b> <code style="background:var(--g1);padding:1px 5px;border-radius:4px">memberId | flowerIds</code>
+  ${adminSection}
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">📋 Header cần có trong Google Sheets</div>
+    <div style="font-size:.82rem;color:var(--forest2);line-height:2.1">
+      <b>Sheet "Flowers":</b> <code>id | name | color | imgUrl | sortOrder</code><br>
+      <b>Sheet "Members":</b> <code>id | displayName | alias | year</code><br>
+      <b>Sheet "Ticks":</b> <code>memberId | flowerIds</code>
     </div>
+    <p style="font-size:.76rem;color:var(--mist);margin-top:10px;line-height:1.6">💡 <b>Lưu ý:</b> Nếu sheet trống hoàn toàn, SheetDB sẽ không nhận ra cấu trúc. Hãy gõ đúng header vào hàng đầu tiên của mỗi tab.</p>
   </div>
   <div class="card">
-    <button class="btn btn-g" onclick="retry()">🔄 Tải lại dữ liệu</button>
+    <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại</button>
     &nbsp;
-    <button class="btn btn-r btn-sm" style="margin-top:8px" onclick="confirmReset()">🔌 Ngắt kết nối</button>
+    <button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>
   </div>`;
 }
 
 async function updateUrl(){
-  const v=document.getElementById('cfg-u').value.trim();
-  if(!v){ return; } URL=v; localStorage.setItem(CK,URL);
-  toast('Đã cập nhật URL'); await loadAll(); render();
+  const v=document.getElementById('cfg-u')?.value.trim();
+  if(!v){toast('Nhập URL!','wn');return;}
+  API_URL=v; localStorage.setItem(CK_URL,API_URL);
+  toast('Đã lưu URL'); await loadAll(); render();
 }
+
+function doLogin(){
+  const pw=document.getElementById('pw')?.value;
+  if(pw===ADMIN_PW){S.admin=true;localStorage.setItem(CK_ADMIN,'1');toast('Chào admin! 🌿');render();}
+  else toast('Sai mật khẩu!','er');
+}
+function doLogout(){S.admin=false;localStorage.removeItem(CK_ADMIN);toast('Đã đăng xuất');render();}
+
+async function retry(){setPulse('loading');await loadAll();render();}
 
 function confirmReset(){
   openModal('🔌 Ngắt kết nối','Xóa URL và quay về màn hình cài đặt?',
-    '<button class="btn btn-o" onclick="closeModal()">Hủy</button>'+
-    '<button class="btn btn-r" onclick="doReset()">Ngắt</button>');
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doReset()">Ngắt</button>`);
 }
-function doReset(){ closeModal(); URL=''; localStorage.removeItem(CK); S={...S,loaded:false,err:null,flowers:[],members:[],ticks:{},page:'dash',mid:'',msel:new Set()}; render(); }
+function doReset(){closeModal();API_URL='';localStorage.removeItem(CK_URL);S={...S,loaded:false,err:null,flowers:[],members:[],ticks:{},page:'flowers',mid:'',msel:new Set()};render();}
 
-// ── UTILS ───────────────────────────────────────────────────
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ── INIT ────────────────────────────────────────────────────
-async function init(){
-  render();
-  if(URL){ await loadAll(); render(); }
+// ─── SETUP & ERROR ─────────────────────────────────────────────────────────
+function renderSetup(){
+  return `<div class="setup">
+    <h2>🌺 Chào mừng đến Hoa Viên</h2>
+    <p>Nhập API URL từ SheetDB để bắt đầu. App sẽ tự đọc dữ liệu từ Google Sheets của bạn.</p>
+    <ol>
+      <li>Tạo tài khoản tại <strong>sheetdb.io</strong></li>
+      <li>Kết nối Google Sheet của bạn</li>
+      <li>Trong Google Sheet, tạo 3 tab: <code>Flowers</code>, <code>Members</code>, <code>Ticks</code></li>
+      <li>Điền header đúng (xem phần Cài đặt)</li>
+      <li>Copy API URL và dán vào đây</li>
+    </ol>
+    <div class="irow" style="margin-top:18px">
+      <input class="fi" id="setup-u" placeholder="https://sheetdb.io/api/v1/xxxxxxxxxx">
+      <button class="btn btn-g" onclick="setupUrl()">Kết nối</button>
+    </div>
+  </div>`;
 }
+
+function renderErr(){
+  return `<div class="errbox">
+    <h3>⚠️ Không tải được dữ liệu</h3>
+    <p>${esc(S.err)}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" onclick="retry()">🔄 Thử lại</button>
+      <button class="btn btn-o btn-sm" onclick="goto('settings')">⚙️ Cài đặt</button>
+    </div>
+  </div>`;
+}
+
+async function setupUrl(){
+  const v=document.getElementById('setup-u')?.value.trim();
+  if(!v){toast('Nhập URL!','wn');return;}
+  API_URL=v; localStorage.setItem(CK_URL,API_URL);
+  render(); await loadAll(); render();
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+async function init(){render();if(API_URL){await loadAll();render();}}
 init();
 </script>
 </body>
