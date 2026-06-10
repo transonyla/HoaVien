@@ -962,105 +962,97 @@ window.doDelLeader=async function(id){
   await loadAll();render();
 };
 
-// ── CLOUDINARY UPLOAD ─────────────────────────────────────────────────────────
+// ── CLOUDINARY UPLOAD + AI OCR ────────────────────────────────────────────────
 window.triggerImgUpload=function(){
   document.getElementById('ef-img-file')?.click();
 };
 
-// ── AI OCR: detect flower name from image via Claude API ──────────────────────
 async function detectFlowerName(file){
-  try {
-    const base64=await new Promise((res,rej)=>{
-      const r=new FileReader();
-      r.onload=()=>res(r.result.split(',')[1]);
-      r.onerror=()=>rej(new Error('Đọc file thất bại'));
-      r.readAsDataURL(file);
-    });
-    const ext=file.type||'image/jpeg';
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:100,
-        messages:[{
-          role:'user',
-          content:[
-            {type:'image',source:{type:'base64',media_type:ext,data:base64}},
-            {type:'text',text:`Đây là ảnh card hoa trong game. Hãy đọc tên hoa hiển thị trên ảnh (thường nằm ở banner/dải màu trên đầu card hoặc dưới ảnh).
-Chỉ trả về đúng tên hoa, không giải thích, không thêm gì khác.
-Nếu không đọc được tên, trả về: KHÔNG_ĐỌC_ĐƯỢC`}
-          ]
-        }]
-      })
-    });
-    const data=await resp.json();
-    const text=(data.content||[]).find(b=>b.type==='text')?.text?.trim()||'';
-    if(!text||text==='KHÔNG_ĐỌC_ĐƯỢC') return null;
-    return text;
-  } catch(e){ console.warn('AI OCR error:',e); return null; }
+  const base64=await new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=()=>rej(new Error('Đọc file thất bại'));
+    r.readAsDataURL(file);
+  });
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:60,
+      messages:[{
+        role:'user',
+        content:[
+          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:base64}},
+          {type:'text',text:'Đây là ảnh từ game hoa. Hãy đọc chính xác tên hoa hiển thị trong ảnh (thường là dòng chữ lớn ở đầu hoặc giữa ảnh). Chỉ trả về đúng tên hoa, không thêm gì khác. Nếu không thấy tên thì trả về: KHÔNG_ĐỌC_ĐƯỢC'}
+        ]
+      }]
+    })
+  });
+  const data=await resp.json();
+  const text=(data.content||[]).find(b=>b.type==='text')?.text?.trim()||'';
+  if(!text||text==='KHÔNG_ĐỌC_ĐƯỢC') return null;
+  return text;
 }
 
 window.onImgFileChange=async function(input){
   const file=input.files[0];
   if(!file) return;
   if(file.size>5*1024*1024){toast('Ảnh tối đa 5MB!','wn');return;}
+
   const preview=document.getElementById('ef-img-preview');
   const urlInput=document.getElementById('ef-img');
   const uploadBtn=document.getElementById('ef-upload-btn');
   const nameInput=document.getElementById('ef-name');
+  const aiStatus=document.getElementById('ef-ai-status');
 
-  if(uploadBtn){uploadBtn.disabled=true;uploadBtn.innerHTML='<div class="sp"></div> Đang xử lý...';}
+  // Show local preview ngay lập tức
+  if(preview){preview.src=URL.createObjectURL(file);preview.style.display='block';}
 
-  // Show local preview immediately
-  const localUrl=URL.createObjectURL(file);
-  if(preview){preview.src=localUrl;preview.style.display='block';}
+  uploadBtn.disabled=true;
+  uploadBtn.innerHTML='<div class="sp"></div> Đang xử lý...';
 
-  // Run upload + AI OCR in parallel
-  const [cloudRes]=await Promise.allSettled([
-    // Cloudinary upload
-    (async()=>{
-      const fd=new FormData();
-      fd.append('file',file);
-      fd.append('upload_preset',CLOUDINARY_PRESET);
-      const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:fd});
-      return res.json();
-    })(),
-    // AI name detection (runs concurrently)
-    (async()=>{
-      // Only auto-fill if name field is empty
-      if(nameInput && !nameInput.value.trim()){
-        const aiBtn=document.getElementById('ef-ai-status');
-        if(aiBtn) aiBtn.textContent='🤖 Đang nhận diện tên...';
-        const name=await detectFlowerName(file);
-        if(name && nameInput && !nameInput.value.trim()){
-          nameInput.value=name;
-          nameInput.style.borderColor='var(--leaf)';
-          setTimeout(()=>{nameInput.style.borderColor='';},1500);
-          toast('🤖 Nhận diện: '+name);
-        } else if(!name){
-          toast('Không đọc được tên từ ảnh, hãy nhập tay','wn');
-        }
-        if(aiBtn) aiBtn.textContent='';
+  // ── BƯỚC 1: AI nhận diện tên (chỉ khi ô tên đang trống) ──────────────────
+  const shouldDetect = nameInput && !nameInput.value.trim();
+  if(shouldDetect){
+    if(aiStatus) aiStatus.textContent='🤖 Đang nhận diện...';
+    try {
+      const name=await detectFlowerName(file);
+      if(name){
+        nameInput.value=name;
+        nameInput.style.transition='border-color .3s';
+        nameInput.style.borderColor='var(--leaf)';
+        setTimeout(()=>{nameInput.style.borderColor='';},2000);
+        toast('🤖 Nhận diện: '+name);
+      } else {
+        toast('Không đọc được tên, hãy nhập tay','wn');
       }
-    })()
-  ]);
+    } catch(e){
+      console.warn('AI OCR error:',e);
+      toast('AI lỗi, hãy nhập tên tay','wn');
+    }
+    if(aiStatus) aiStatus.textContent='';
+  }
 
-  // Handle upload result
-  if(cloudRes.status==='fulfilled'){
-    const data=cloudRes.value;
+  // ── BƯỚC 2: Upload Cloudinary ─────────────────────────────────────────────
+  uploadBtn.innerHTML='<div class="sp"></div> Đang upload...';
+  try {
+    const fd=new FormData();
+    fd.append('file',file);
+    fd.append('upload_preset',CLOUDINARY_PRESET);
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:fd});
+    const data=await res.json();
     if(data.secure_url){
       urlInput.value=data.secure_url;
-      if(preview){preview.src=data.secure_url;}
+      if(preview) preview.src=data.secure_url;
       toast('Upload ảnh thành công! 🖼️');
     } else {
       toast('Upload thất bại: '+(data.error?.message||'Lỗi không xác định'),'er');
     }
-  } else {
-    toast('Lỗi upload: '+cloudRes.reason?.message,'er');
-  }
+  } catch(e){ toast('Lỗi upload: '+e.message,'er'); }
 
-  if(uploadBtn){uploadBtn.disabled=false;uploadBtn.innerHTML='🖼️ Chọn ảnh';}
+  uploadBtn.disabled=false;
+  uploadBtn.innerHTML='🖼️ Chọn ảnh';
 };
 
 // ── FLOWERS (ADMIN) ────────────────────────────────────────────────────────────
@@ -1091,10 +1083,7 @@ window.openAddFlower=function(){
   const sw=COLS.map(c=>`<div class="csw ${c.k==='trang'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('🌸 Thêm hoa mới',
     `<div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg-col">
-        <label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:400;color:var(--leaf);font-size:.7rem"></span></label>
-        <input class="fi" id="ef-name" placeholder="Chọn ảnh để tự nhận diện tên 🤖">
-      </div>
+      <div class="fg-col"><label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:500;color:var(--leaf);font-size:.72rem"></span></label><input class="fi" id="ef-name" placeholder="Chọn ảnh để tự nhận diện tên 🤖"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col">
         <label class="fl">Ảnh</label>
@@ -1116,10 +1105,7 @@ window.openEditFlower=function(id){
   const sw=COLS.map(c=>`<div class="csw ${c.k===S._editColor?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('✏️ Sửa hoa',
     `<div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg-col">
-        <label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:400;color:var(--leaf);font-size:.7rem"></span></label>
-        <input class="fi" id="ef-name" value="${esc(f.name)}">
-      </div>
+      <div class="fg-col"><label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:500;color:var(--leaf);font-size:.72rem"></span></label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col">
         <label class="fl">Ảnh</label>
