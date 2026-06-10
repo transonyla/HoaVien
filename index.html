@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌺 Hoa Viên</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root {
   --forest:#1a3a22;--forest2:#2d5438;--leaf:#4a8c5c;--mint:#c8e6c9;--sage:#e8f5e9;
@@ -962,7 +963,28 @@ window.doDelLeader=async function(id){
   await loadAll();render();
 };
 
-// ── CLOUDINARY UPLOAD ────────────────────────────────────────────────────────
+// ── CLOUDINARY UPLOAD + TESSERACT OCR ────────────────────────────────────────
+window.triggerImgUpload=function(){
+  document.getElementById('ef-img-file')?.click();
+};
+
+async function detectFlowerName(file){
+  const url=URL.createObjectURL(file);
+  try {
+    const worker=await Tesseract.createWorker(['vie','eng'],1,{logger:()=>{}});
+    const {data}=await worker.recognize(url);
+    await worker.terminate();
+    URL.revokeObjectURL(url);
+    const best=data.lines
+      .filter(l=>l.confidence>30&&l.text.trim().length>1)
+      .sort((a,b)=>b.confidence-a.confidence)[0];
+    const name=best?.text?.trim().replace(/\n/g,' ')||'';
+    return name||null;
+  } catch(e){
+    URL.revokeObjectURL(url);
+    throw e;
+  }
+}
 
 window.onImgFileChange=async function(input){
   const file=input.files[0];
@@ -972,11 +994,35 @@ window.onImgFileChange=async function(input){
   const preview=document.getElementById('ef-img-preview');
   const urlInput=document.getElementById('ef-img');
   const uploadBtn=document.getElementById('ef-upload-btn');
+  const nameInput=document.getElementById('ef-name');
+  const aiStatus=document.getElementById('ef-ai-status');
 
   // Hiện preview local ngay lập tức
   if(preview){preview.src=URL.createObjectURL(file);preview.style.display='block';}
   uploadBtn.disabled=true;
-  // ── Upload Cloudinary ─────────────────────────────────────────────────────
+  uploadBtn.innerHTML='<div class="sp"></div> Đang xử lý...';
+
+  // ── BƯỚC 1: Gemini nhận diện tên (chỉ khi ô tên trống) ───────────────────
+  if(nameInput && !nameInput.value.trim()){
+    if(aiStatus) aiStatus.textContent='🔍 Đang đọc chữ...';
+    try {
+      const name=await detectFlowerName(file);
+      if(name){
+        nameInput.value=name;
+        nameInput.style.transition='border-color .3s';
+        nameInput.style.borderColor='var(--leaf)';
+        setTimeout(()=>{nameInput.style.borderColor='';},2000);
+        toast('🤖 Nhận diện: '+name);
+      } else {
+        toast('Không đọc được tên, hãy nhập tay','wn');
+      }
+    } catch(e){
+      toast('🔴 '+e.message,'er');
+    }
+    if(aiStatus) aiStatus.textContent='';
+  }
+
+  // ── BƯỚC 2: Upload Cloudinary ─────────────────────────────────────────────
   uploadBtn.innerHTML='<div class="sp"></div> Đang upload...';
   try {
     const fd=new FormData();
@@ -1025,7 +1071,7 @@ window.openAddFlower=function(){
   const sw=COLS.map(c=>`<div class="csw ${c.k==='trang'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('🌸 Thêm hoa mới',
     `<div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" placeholder="Nhập tên hoa..."></div>
+      <div class="fg-col"><label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:500;color:var(--leaf);font-size:.72rem"></span></label><input class="fi" id="ef-name" placeholder="Chọn ảnh để tự nhận diện tên 🤖"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col">
         <label class="fl">Ảnh</label>
@@ -1047,7 +1093,7 @@ window.openEditFlower=function(id){
   const sw=COLS.map(c=>`<div class="csw ${c.k===S._editColor?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('✏️ Sửa hoa',
     `<div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
+      <div class="fg-col"><label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:500;color:var(--leaf);font-size:.72rem"></span></label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col">
         <label class="fl">Ảnh</label>
@@ -1215,7 +1261,8 @@ function pageSettings(){
       ${hasConfig?`<button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>`:''}
     </div>
   </div>
-  <div class="card" style="margin-bottom:14px">
+
+  <div class="card">
     <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
   </div>`;
 }
