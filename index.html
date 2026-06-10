@@ -962,8 +962,8 @@ window.doDelLeader=async function(id){
   await loadAll();render();
 };
 
-// ── CLOUDINARY UPLOAD + GEMINI VISION OCR ────────────────────────────────────
-const CK_CLAUDE = 'hv5_gemini_key';
+// ── CLOUDINARY UPLOAD + OPENROUTER VISION OCR ───────────────────────────────
+const CK_CLAUDE = 'hv5_openrouter_key';
 function loadClaudeKey(){ return localStorage.getItem(CK_CLAUDE)||''; }
 
 window.triggerImgUpload=function(){
@@ -972,7 +972,7 @@ window.triggerImgUpload=function(){
 
 async function detectFlowerName(file){
   const key=loadClaudeKey();
-  if(!key) throw new Error('Chưa cài Gemini API Key (vào ⚙️ Cài đặt → dán key vào)');
+  if(!key) throw new Error('Chưa cài OpenRouter API Key (vào ⚙️ Cài đặt → dán key vào)');
   const base64=await new Promise((res,rej)=>{
     const r=new FileReader();
     r.onload=()=>res(r.result.split(',')[1]);
@@ -980,20 +980,24 @@ async function detectFlowerName(file){
     r.readAsDataURL(file);
   });
   const mediaType=file.type||'image/jpeg';
-  const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+  const resp=await fetch('https://openrouter.ai/api/v1/chat/completions',{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+key,
+    },
     body:JSON.stringify({
-      contents:[{parts:[
-        {inline_data:{mime_type:mediaType,data:base64}},
-        {text:'Đây là ảnh từ game hoa. Hãy đọc chính xác tên hoa hiển thị trong ảnh (thường là dòng chữ lớn ở đầu hoặc giữa ảnh, trên nền banner/bảng tên). Chỉ trả về đúng tên hoa, không thêm gì khác. Nếu không thấy tên thì trả về: KHÔNG_ĐỌC_ĐƯỢC'}
-      ]}],
-      generationConfig:{maxOutputTokens:64}
+      model:'meta-llama/llama-4-maverick:free',
+      max_tokens:64,
+      messages:[{role:'user',content:[
+        {type:'image_url',image_url:{url:'data:'+mediaType+';base64,'+base64}},
+        {type:'text',text:'Đây là ảnh từ game hoa. Hãy đọc chính xác tên hoa hiển thị trong ảnh (thường là dòng chữ lớn ở đầu hoặc giữa ảnh, trên nền banner/bảng tên). Chỉ trả về đúng tên hoa, không thêm gì khác. Nếu không thấy tên thì trả về: KHÔNG_ĐỌC_ĐƯỢC'}
+      ]}]
     })
   });
   const data=await resp.json();
-  if(data.error) throw new Error('Gemini lỗi: '+data.error.message);
-  const text=data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
+  if(data.error) throw new Error('OpenRouter lỗi: '+(data.error.message||JSON.stringify(data.error)));
+  const text=data.choices?.[0]?.message?.content?.trim()||'';
   if(!text||text==='KHÔNG_ĐỌC_ĐƯỢC') return null;
   return text;
 }
@@ -1276,13 +1280,13 @@ function pageSettings(){
     </div>
   </div>
   <div class="card" style="margin-bottom:14px">
-    <div class="card-title">🤖 Gemini API Key
+    <div class="card-title">🤖 OpenRouter API Key
       <span style="font-size:.72rem;font-weight:500;margin-left:4px;color:${claudeKey?'var(--leaf)':'#ef9a9a'}">${claudeKey?'● Đã cài':'● Chưa cài — nhận diện hoa sẽ không hoạt động'}</span>
     </div>
-    <p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Dùng để nhận diện tên hoa từ ảnh. Key lưu trên máy này, không gửi lên Firebase. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--leaf)">Lấy key tại aistudio.google.com →</a></p>
+    <p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Dùng để nhận diện tên hoa từ ảnh. Key lưu trên máy này, không gửi lên Firebase. <a href="https://openrouter.ai/settings/keys" target="_blank" style="color:var(--leaf)">Lấy key miễn phí tại openrouter.ai →</a></p>
     ${claudeKey?`<div style="font-size:.78rem;color:var(--mist);background:var(--sage);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-family:monospace">${keyMasked}</div>`:''}
     <div style="display:flex;gap:8px;align-items:center">
-      <input class="fi" id="claude-key-input" type="password" placeholder="AQ...." style="flex:1;font-family:monospace;font-size:.82rem">
+      <input class="fi" id="claude-key-input" type="password" placeholder="sk-or-v1-..." style="flex:1;font-family:monospace;font-size:.82rem">
       <button class="btn btn-o btn-sm" type="button" onclick="toggleClaudeKeyVis()">👁️</button>
     </div>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
@@ -1308,15 +1312,15 @@ window.saveFirebaseConfig=async function(){
 };
 window.doSaveClaudeKey=function(){
   const k=document.getElementById('claude-key-input')?.value.trim();
-  if(!k){toast('Nhập Gemini API Key!','wn');return;}
-  if(!k.startsWith('AQ.')){toast('Key phải bắt đầu bằng AQ....','wn');return;}
+  if(!k){toast('Nhập OpenRouter API Key!','wn');return;}
+  if(!k.startsWith('sk-or-v1-')){toast('Key phải bắt đầu bằng sk-or-v1-...','wn');return;}
   localStorage.setItem(CK_CLAUDE,k);
-  toast('Đã lưu Gemini API Key 🤖');
+  toast('Đã lưu OpenRouter API Key 🤖');
   render();
 };
 window.doDeleteClaudeKey=function(){
   localStorage.removeItem(CK_CLAUDE);
-  toast('Đã xóa Gemini API Key','wn');
+  toast('Đã xóa OpenRouter API Key','wn');
   render();
 };
 window.toggleClaudeKeyVis=function(){
