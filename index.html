@@ -231,6 +231,8 @@ const FIREBASE_CONFIG = {
 const CK_FB    = 'hv4_fb_config';
 const CK_SESSION = 'hv5_session'; // {role:'admin'|'leader'|'member', id, clanId}
 const ADMIN_PW_HASH = '67cec4b5d00d79ebebcffdb35234c91c785dca6d03235137aecb44d04011df51';
+const CLOUDINARY_CLOUD = 'dcjv64yqh';
+const CLOUDINARY_PRESET = 'Hoavien';
 
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
@@ -865,6 +867,35 @@ window.doDelLeader=async function(id){
   await loadAll();render();
 };
 
+// ── CLOUDINARY UPLOAD ─────────────────────────────────────────────────────────
+window.triggerImgUpload=function(){
+  document.getElementById('ef-img-file')?.click();
+};
+window.onImgFileChange=async function(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>5*1024*1024){toast('Ảnh tối đa 5MB!','wn');return;}
+  const preview=document.getElementById('ef-img-preview');
+  const urlInput=document.getElementById('ef-img');
+  const uploadBtn=document.getElementById('ef-upload-btn');
+  if(uploadBtn){uploadBtn.disabled=true;uploadBtn.innerHTML='<div class="sp"></div> Đang upload...';}
+  try {
+    const fd=new FormData();
+    fd.append('file',file);
+    fd.append('upload_preset',CLOUDINARY_PRESET);
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:fd});
+    const data=await res.json();
+    if(data.secure_url){
+      urlInput.value=data.secure_url;
+      if(preview){preview.src=data.secure_url;preview.style.display='block';}
+      toast('Upload ảnh thành công! 🖼️');
+    } else {
+      toast('Upload thất bại: '+(data.error?.message||'Lỗi không xác định'),'er');
+    }
+  } catch(e){toast('Lỗi upload: '+e.message,'er');}
+  if(uploadBtn){uploadBtn.disabled=false;uploadBtn.innerHTML='🖼️ Chọn ảnh';}
+};
+
 // ── FLOWERS (ADMIN) ────────────────────────────────────────────────────────────
 function manageFlowers(){
   const rows=S.flowers.map(f=>{
@@ -895,7 +926,15 @@ window.openAddFlower=function(){
     `<div style="display:flex;flex-direction:column;gap:12px">
       <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" placeholder="Hoa hồng nhung"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
-      <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" placeholder="https://..."></div>
+      <div class="fg-col">
+        <label class="fl">Ảnh</label>
+        <input type="file" id="ef-img-file" accept="image/*" style="display:none" onchange="onImgFileChange(this)">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="fi" id="ef-img" placeholder="https://... hoặc chọn ảnh từ máy" style="flex:1">
+          <button class="btn btn-o btn-sm" id="ef-upload-btn" type="button" onclick="triggerImgUpload()">🖼️ Chọn ảnh</button>
+        </div>
+        <img id="ef-img-preview" src="" style="display:none;margin-top:8px;width:100%;max-height:140px;object-fit:cover;border-radius:9px;border:1px solid var(--bd)">
+      </div>
       <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="0"></div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
@@ -909,7 +948,15 @@ window.openEditFlower=function(id){
     `<div style="display:flex;flex-direction:column;gap:12px">
       <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
-      <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" value="${esc(f.imgUrl)}"></div>
+      <div class="fg-col">
+        <label class="fl">Ảnh</label>
+        <input type="file" id="ef-img-file" accept="image/*" style="display:none" onchange="onImgFileChange(this)">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="fi" id="ef-img" value="${esc(f.imgUrl)}" placeholder="https://... hoặc chọn ảnh từ máy" style="flex:1">
+          <button class="btn btn-o btn-sm" id="ef-upload-btn" type="button" onclick="triggerImgUpload()">🖼️ Chọn ảnh</button>
+        </div>
+        <img id="ef-img-preview" src="${esc(f.imgUrl)}" style="display:${f.imgUrl?'block':'none'};margin-top:8px;width:100%;max-height:140px;object-fit:cover;border-radius:9px;border:1px solid var(--bd)">
+      </div>
       <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="${f.sortOrder}"></div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
