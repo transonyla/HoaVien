@@ -239,7 +239,7 @@ function ftch(url, opts={}, ms=12000) {
 }
 
 // ── SheetDB helpers ─────────────────────────────────────────
-const base = tab => tab ? URL+'/sheet/'+encodeURIComponent(tab) : URL;
+const base = tab => tab ? URL+'/sheets/'+encodeURIComponent(tab) : URL;
 
 async function sGet(tab) {
   dot('load');
