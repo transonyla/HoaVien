@@ -230,7 +230,7 @@ const FIREBASE_CONFIG = {
 
 const CK_FB    = 'hv4_fb_config';
 const CK_SESSION = 'hv5_session'; // {role:'admin'|'leader'|'member', id, clanId}
-const ADMIN_PW = 'hoavien2024';
+const ADMIN_PW_HASH = '67cec4b5d00d79ebebcffdb35234c91c785dca6d03235137aecb44d04011df51';
 
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
@@ -481,9 +481,13 @@ function loginFormMember(){
   </div>`;
 }
 
-window.doLoginAdmin=function(){
+window.doLoginAdmin=async function(){
   const pw=document.getElementById('adm-pw')?.value;
-  if(pw===ADMIN_PW){
+  if(!pw){toast('Nhập mật khẩu!','wn');return;}
+  const enc=new TextEncoder().encode(pw);
+  const buf=await crypto.subtle.digest('SHA-256',enc);
+  const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hash===ADMIN_PW_HASH){
     saveSession({role:'admin',id:'admin',clanId:'',displayName:'Admin'});
     S.page='flowers';toast('Chào Admin! 🔓');render();
   } else toast('Sai mật khẩu!','er');
