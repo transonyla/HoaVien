@@ -990,6 +990,7 @@ async function detectFlowerName(file){
     }
   );
   const data=await resp.json();
+  if(data.error) throw new Error('Gemini lỗi '+data.error.code+': '+data.error.message);
   const text=data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
   if(!text||text==='KHÔNG_ĐỌC_ĐƯỢC') return null;
   return text;
@@ -1026,8 +1027,7 @@ window.onImgFileChange=async function(input){
         toast('Không đọc được tên, hãy nhập tay','wn');
       }
     } catch(e){
-      console.warn('Gemini OCR error:',e);
-      toast('Không nhận diện được, hãy nhập tay','wn');
+      toast('🔴 '+e.message,'er');
     }
     if(aiStatus) aiStatus.textContent='';
   }
