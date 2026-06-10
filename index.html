@@ -12,6 +12,7 @@
   --ink:#0d1f12;--mist:#6b8f71;--haze:#b2d8b8;--paper:#f5faf6;--white:#ffffff;
   --bd:#d4e8d6;--r:14px;--rp:999px;
   --sh:0 2px 12px rgba(26,58,34,.08);--shd:0 8px 32px rgba(26,58,34,.14);
+  --clan:#7c3aed;--clan2:#ede9fe;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;-webkit-tap-highlight-color:transparent}
@@ -21,6 +22,8 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(-
 .bar-logo{font-size:1.05rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;letter-spacing:-.01em}
 .bar-sp{flex:1}
 .bar-sync{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#a5d6a7}
+.bar-user{display:flex;align-items:center;gap:6px;font-size:.76rem;color:#a5d6a7;cursor:pointer;padding:4px 9px;border-radius:var(--rp);border:1px solid rgba(165,214,167,.3);transition:background .13s}
+.bar-user:hover{background:rgba(255,255,255,.08)}
 .pulse{width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0;transition:background .3s}
 .pulse.loading{background:#90caf9;animation:blink 1s infinite}
 .pulse.err{background:#ef5350}
@@ -32,7 +35,6 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(-
 .nvb{padding:8px 15px;border-radius:var(--rp);font-size:.8rem;font-weight:700;border:1.5px solid var(--bd);background:var(--white);color:var(--mist);cursor:pointer;transition:all .14s;white-space:nowrap;font-family:inherit}
 .nvb:hover{color:var(--forest);border-color:var(--leaf)}
 .nvb.on{background:var(--forest);color:#fff;border-color:var(--forest)}
-.nvb.pk{background:var(--petal);color:#fff;border-color:var(--petal)}
 
 .card{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--sh);padding:18px}
 .card+.card{margin-top:14px}
@@ -55,6 +57,10 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(-
 .tc.ticked{border-color:var(--petal);box-shadow:0 0 0 2px var(--blush)}
 .chk{position:absolute;top:7px;right:7px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.75);border:2px solid rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:13px;backdrop-filter:blur(3px);transition:all .13s}
 .tc.ticked .chk{background:var(--petal);border-color:var(--petal);color:#fff}
+
+/* clan badges on flower cards */
+.fc-clans{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.clan-tag{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:var(--rp);background:var(--clan2);color:var(--clan)}
 
 .grp{margin:26px 0 13px;display:flex;align-items:center;gap:9px}
 .grp-bar{width:4px;height:20px;border-radius:3px;background:var(--petal);flex-shrink:0}
@@ -81,6 +87,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 .btn{display:inline-flex;align-items:center;gap:5px;padding:9px 17px;border-radius:9px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:all .13s}
 .btn-g{background:var(--forest2);color:#fff}.btn-g:hover{background:var(--leaf)}
 .btn-p{background:var(--petal);color:#fff}.btn-p:hover{background:#c2185b}
+.btn-v{background:var(--clan);color:#fff}.btn-v:hover{background:#5b21b6}
 .btn-o{background:transparent;color:var(--forest2);border:1.5px solid var(--bd)}.btn-o:hover{border-color:var(--mist)}
 .btn-r{background:transparent;color:#d32f2f;border:1.5px solid #ffcdd2}.btn-r:hover{background:#ffebee}
 .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -110,13 +117,6 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 .savebar{position:fixed;bottom:0;left:0;right:0;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;z-index:150;box-shadow:0 -4px 20px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .22s}
 .savebar.on{transform:none}
 
-.mpicker{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--shd);padding:18px;margin-bottom:20px}
-.mpicker-title{font-size:.88rem;font-weight:800;color:var(--forest2);margin-bottom:13px}
-.mlist{display:flex;flex-wrap:wrap;gap:7px}
-.mchip{padding:7px 14px;border-radius:var(--rp);font-size:.8rem;font-weight:700;border:1.5px solid var(--bd);background:var(--white);color:var(--mist);cursor:pointer;transition:all .13s}
-.mchip:hover{border-color:var(--leaf);color:var(--forest)}
-.mchip.on{background:var(--petal);color:#fff;border-color:var(--petal)}
-
 .toasts{position:fixed;top:64px;right:12px;z-index:999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
 .toast{background:var(--forest);color:#fff;padding:10px 15px;border-radius:9px;font-size:.81rem;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.2);animation:tin .22s ease,tout .28s ease 2.2s forwards;pointer-events:auto;max-width:280px}
 .toast.ok{border-left:3px solid #4caf50}
@@ -140,17 +140,30 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 .empty{text-align:center;padding:48px 16px;color:var(--haze)}
 .empty-icon{font-size:2.6rem;margin-bottom:10px}
 
+/* login screen */
+.login-wrap{max-width:400px;margin:48px auto;padding:0 14px}
+.login-box{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--shd);padding:32px}
+.login-logo{font-size:2rem;margin-bottom:4px;text-align:center}
+.login-title{font-size:1.15rem;font-weight:800;text-align:center;color:var(--forest);margin-bottom:4px}
+.login-sub{font-size:.8rem;color:var(--mist);text-align:center;margin-bottom:24px}
+.login-tabs{display:flex;gap:0;margin-bottom:20px;border:1.5px solid var(--bd);border-radius:9px;overflow:hidden}
+.login-tab{flex:1;padding:8px;font-family:inherit;font-size:.8rem;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--mist);transition:all .13s}
+.login-tab.on{background:var(--forest);color:#fff}
+.role-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--rp);font-size:.72rem;font-weight:700}
+.role-admin{background:#fff3e0;color:#e65100}
+.role-leader{background:var(--clan2);color:var(--clan)}
+.role-member{background:var(--sage);color:var(--forest2)}
+
 /* setup */
 .setup{max-width:540px;margin:36px auto;background:var(--white);border-radius:var(--r);border:1px solid var(--bd);padding:30px;box-shadow:var(--sh)}
 .setup h2{font-size:1.2rem;font-weight:800;margin-bottom:9px;color:var(--forest)}
 .setup p{font-size:.84rem;color:var(--mist);line-height:1.75;margin-bottom:14px}
-.setup ol{padding-left:18px;font-size:.84rem;color:var(--forest2);line-height:2.2}
 .setup-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
 .setup-step{display:flex;align-items:flex-start;gap:12px;background:var(--sage);border-radius:10px;padding:12px 14px}
 .setup-num{width:24px;height:24px;border-radius:50%;background:var(--forest);color:#fff;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .setup-text{font-size:.83rem;color:var(--forest2);line-height:1.6}
 code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;color:var(--forest2);font-family:monospace}
-.cfg-area{background:var(--sage);border-radius:10px;padding:14px;font-size:.78rem;font-family:monospace;color:var(--forest2);line-height:1.8;margin:10px 0;border:1px dashed var(--bd);white-space:pre-wrap;word-break:break-all}
+.fb-textarea{font-family:monospace;font-size:.78rem;min-height:130px;resize:vertical;white-space:pre}
 
 .errbox{max-width:470px;margin:36px auto;background:var(--white);border-radius:var(--r);border:1.5px solid #ffcdd2;padding:24px;box-shadow:var(--sh)}
 .errbox h3{font-size:1rem;font-weight:800;color:#c62828;margin-bottom:8px}
@@ -161,8 +174,10 @@ code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;co
 .csw:hover{transform:scale(1.18)}
 .csw.on{border-color:var(--ink)!important;transform:scale(1.15)}
 
-/* Firebase config textarea */
-.fb-textarea{font-family:monospace;font-size:.78rem;min-height:130px;resize:vertical;white-space:pre}
+/* section divider */
+.sec-div{display:flex;align-items:center;gap:10px;margin:22px 0 14px}
+.sec-div-line{flex:1;height:1px;background:var(--bd)}
+.sec-div-label{font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
 
 @media(max-width:480px){
   .fg{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
@@ -190,36 +205,34 @@ code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;co
   <span class="bar-logo">Hoa Viên</span>
   <div class="bar-sp"></div>
   <div class="bar-sync"><div class="pulse" id="pulse"></div><span id="synclbl">Kết nối</span></div>
+  <div id="bar-user-area"></div>
 </div>
 
 <div class="wrap" id="app"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
   getFirestore, enableIndexedDbPersistence,
   collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
-  doc, query, where, onSnapshot, serverTimestamp
+  doc, query, where, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// ─── FIREBASE CONFIG — nhúng sẵn, bạn bè mở link là dùng luôn ───────────────
+// ─── FIREBASE CONFIG ─────────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
   "apiKey": "AIzaSyD_iS-3bNySPRwF1x0XFqV6Vgr2R6_bI1c",
   "authDomain": "hoavien-b5874.firebaseapp.com",
   "projectId": "hoavien-b5874",
   "storageBucket": "hoavien-b5874.firebasestorage.app",
   "messagingSenderId": "269916169212",
-  "appId": "1:269916169212:web:3e6ebbd0d41299ffdfc879",
-  "measurementId": "G-6ZFGSCY3F5"
+  "appId": "1:269916169212:web:3e6ebbd0d41299ffdfc879"
 };
 
-// ─── CONFIG KEY ───────────────────────────────────────────────────────────────
 const CK_FB    = 'hv4_fb_config';
-const CK_ADMIN = 'hv4_admin';
-const ADMIN_PW = 'hoavien2024'; // ← đổi mật khẩu admin ở đây
+const CK_SESSION = 'hv5_session'; // {role:'admin'|'leader'|'member', id, clanId}
+const ADMIN_PW = 'hoavien2024';
 
-// ─── COLORS (bỏ vàng và cam) ─────────────────────────────────────────────────
+// ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
   {k:'trang',l:'Trắng/Xám', h:'#94a3b8'},
   {k:'xanh', l:'Xanh lá',   h:'#22c55e'},
@@ -233,33 +246,38 @@ const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let db = null;
-let unsubscribes = [];
-
 let S = {
-  flowers:[], members:[], ticks:{},
+  flowers:[],
+  clans:[],      // [{id,name}]
+  leaders:[],    // [{id,username,password,clanId,displayName}]
+  members:[],    // [{id,username,password,clanId,leaderId,displayName,alias,year}]
+  ticks:{},      // {memberId:[flowerIds]}
   loaded:false, err:null,
   page:'flowers', fcolor:'all', fq:'',
-  mid:'', msel:new Set(),
-  admin: !!localStorage.getItem(CK_ADMIN),
+  msel:new Set(),
+  session: null, // {role, id, clanId, displayName}
+  loginTab: 'member',
+  _editFlowerId:null, _editColor:'trang',
 };
 
-// ─── FIREBASE INIT ────────────────────────────────────────────────────────────
+// restore session
+try {
+  const raw = localStorage.getItem(CK_SESSION);
+  if(raw) S.session = JSON.parse(raw);
+} catch(e){}
+
+// ─── FIREBASE ────────────────────────────────────────────────────────────────
 function initFirebase(config){
   try {
-    const existing = getApps().find(a => a.name === 'hoavien');
-    const app = existing ? getApp('hoavien') : initializeApp(config, 'hoavien');
+    const existing = getApps().find(a=>a.name==='hoavien');
+    const app = existing ? getApp('hoavien') : initializeApp(config,'hoavien');
     db = getFirestore(app);
-    // Cache offline — lần sau load từ cache, không cần chờ mạng
     enableIndexedDbPersistence(db).catch(()=>{});
     return true;
-  } catch(e) {
-    console.error(e);
-    return false;
-  }
+  } catch(e){ console.error(e); return false; }
 }
-
 function loadSavedConfig(){
-  const raw = localStorage.getItem(CK_FB);
+  const raw=localStorage.getItem(CK_FB);
   if(!raw) return null;
   try { return JSON.parse(raw); } catch(e){ return null; }
 }
@@ -269,8 +287,7 @@ const setPulse = s => {
   const d=document.getElementById('pulse');
   if(!d) return;
   d.className='pulse'+(s==='loading'?' loading':s==='err'?' err':'');
-  document.getElementById('synclbl').textContent=
-    s==='loading'?'Đang tải':s==='err'?'Lỗi':'Kết nối';
+  document.getElementById('synclbl').textContent=s==='loading'?'Đang tải':s==='err'?'Lỗi':'Kết nối';
 };
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────
@@ -294,81 +311,122 @@ window.closeModal=closeModal;
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function uid(){return 'm'+Date.now()+Math.floor(Math.random()*1000);}
 
 // ─── FIRESTORE CRUD ──────────────────────────────────────────────────────────
-async function fsGetAll(col_name){
-  const snap = await getDocs(collection(db, col_name));
+async function fsGetAll(colName){
+  const snap=await getDocs(collection(db,colName));
   return snap.docs.map(d=>({_id:d.id,...d.data()}));
 }
-
-async function fsAdd(col_name, data){
-  const ref = await addDoc(collection(db, col_name), data);
-  return ref.id;
+async function fsSet(colName,docId,data){
+  await setDoc(doc(db,colName,docId),data,{merge:true});
 }
-
-async function fsSet(col_name, docId, data){
-  await setDoc(doc(db, col_name, docId), data, {merge:true});
-}
-
-async function fsDel(col_name, docId){
-  await deleteDoc(doc(db, col_name, docId));
+async function fsDel(colName,docId){
+  await deleteDoc(doc(db,colName,docId));
 }
 
 // ─── LOAD ALL ────────────────────────────────────────────────────────────────
 async function loadAll(){
   if(!db){S.loaded=true;return;}
-  S.loaded=false; S.err=null; setPulse('loading');
+  S.loaded=false;S.err=null;setPulse('loading');
   try {
-    const [fl,mb,tk] = await Promise.all([
+    const [fl,cl,ld,mb,tk]=await Promise.all([
       fsGetAll('flowers'),
+      fsGetAll('clans'),
+      fsGetAll('leaders'),
       fsGetAll('members'),
       fsGetAll('ticks'),
     ]);
-    S.flowers = fl.filter(r=>r.name).map(r=>({
-      id:r._id, name:r.name, color:r.color||'trang',
-      imgUrl:r.imgUrl||'', sortOrder:Number(r.sortOrder)||0,
+    S.flowers=fl.filter(r=>r.name).map(r=>({
+      id:r._id,name:r.name,color:r.color||'trang',
+      imgUrl:r.imgUrl||'',sortOrder:Number(r.sortOrder)||0,
     })).sort((a,b)=>a.sortOrder-b.sortOrder);
-    S.members = mb.filter(r=>r.displayName).map(r=>({
-      id:r._id, displayName:r.displayName, alias:r.alias||'', year:r.year||'',
+    S.clans=cl.filter(r=>r.name).map(r=>({id:r._id,name:r.name}));
+    S.leaders=ld.filter(r=>r.username).map(r=>({
+      id:r._id,username:r.username,password:r.password||'',
+      clanId:r.clanId||'',displayName:r.displayName||r.username,
     }));
-    S.ticks = {};
-    tk.forEach(r=>{
-      // doc id = memberId, field flowerIds = array
-      S.ticks[r._id] = Array.isArray(r.flowerIds) ? r.flowerIds : [];
-    });
-    S.loaded=true; setPulse('');
+    S.members=mb.filter(r=>r.username).map(r=>({
+      id:r._id,username:r.username,password:r.password||'',
+      clanId:r.clanId||'',leaderId:r.leaderId||'',
+      displayName:r.displayName||r.username,alias:r.alias||'',year:r.year||'',
+    }));
+    S.ticks={};
+    tk.forEach(r=>{S.ticks[r._id]=Array.isArray(r.flowerIds)?r.flowerIds:[];});
+    S.loaded=true;setPulse('');
+    // refresh session display name if needed
+    if(S.session){
+      if(S.session.role==='leader'){
+        const l=S.leaders.find(x=>x.id===S.session.id);
+        if(l) S.session.displayName=l.displayName;
+      } else if(S.session.role==='member'){
+        const m=S.members.find(x=>x.id===S.session.id);
+        if(m){S.session.displayName=m.displayName;S.session.clanId=m.clanId;}
+      }
+    }
   } catch(e){
-    S.err = 'Không tải được dữ liệu: '+e.message;
-    S.loaded=true; setPulse('err');
+    S.err='Không tải được: '+e.message;
+    S.loaded=true;setPulse('err');
   }
+}
+
+// ─── SESSION HELPERS ─────────────────────────────────────────────────────────
+function saveSession(s){
+  S.session=s;
+  localStorage.setItem(CK_SESSION,JSON.stringify(s));
+}
+function clearSession(){
+  S.session=null;
+  localStorage.removeItem(CK_SESSION);
+}
+function isAdmin(){return S.session?.role==='admin';}
+function isLeader(){return S.session?.role==='leader';}
+function isMember(){return S.session?.role==='member';}
+function mySession(){return S.session;}
+function myClanId(){return S.session?.clanId||'';}
+function myClanName(){
+  const c=S.clans.find(x=>x.id===myClanId());
+  return c?c.name:'';
 }
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
 function render(){
   const app=document.getElementById('app');
   if(!app) return;
+
+  // savebar
   const sb=document.getElementById('savebar');
-  if(S.page==='tick'&&S.mid){sb.classList.add('on');document.getElementById('sbc').textContent=S.msel.size;}
+  if(S.page==='tick'&&isMember()){sb.classList.add('on');document.getElementById('sbc').textContent=S.msel.size;}
   else sb.classList.remove('on');
+
+  // header user area
+  renderBarUser();
 
   if(!db){app.innerHTML=renderSetup();return;}
   if(!S.loaded){app.innerHTML='<div class="loading"><div class="sp"></div> Đang tải...</div>';return;}
   if(S.err){app.innerHTML=renderErr();return;}
+  if(!S.session){app.innerHTML=renderLogin();return;}
+
   app.innerHTML=renderNav()+renderPage();
 }
 
-function renderNav(){
-  const tabs=[
-    {k:'flowers',l:'🌸 Hoa'},
-    {k:'tick',   l:'✅ Đánh dấu'},
-    {k:'members',l:'👥 Thành viên'},
-    ...(S.admin?[{k:'manage',l:'⚙️ Quản lý'}]:[]),
-    {k:'settings',l:'🔧 Cài đặt'},
-  ];
-  return `<div class="nav">${tabs.map(t=>`<button class="nvb ${S.page===t.k?'on':''}" onclick="goto('${t.k}')">${t.l}</button>`).join('')}</div>`;
+function renderBarUser(){
+  const area=document.getElementById('bar-user-area');
+  if(!area) return;
+  if(!S.session){area.innerHTML='';return;}
+  const icons={admin:'🔓',leader:'🏆',member:'🌸'};
+  const icon=icons[S.session.role]||'👤';
+  area.innerHTML=`<div class="bar-user" onclick="doLogout()" title="Nhấn để đăng xuất">${icon} <span>${esc(S.session.displayName)}</span> <span style="opacity:.5;font-size:.65rem">✕</span></div>`;
 }
 
+function renderNav(){
+  const tabs=[];
+  if(isAdmin()||isLeader()||isMember()) tabs.push({k:'flowers',l:'🌸 Hoa'});
+  if(isMember()) tabs.push({k:'tick',l:'✅ Đánh dấu'});
+  if(isAdmin()||isLeader()) tabs.push({k:'members',l:'👥 Thành viên'});
+  if(isAdmin()||isLeader()) tabs.push({k:'manage',l:'⚙️ Quản lý'});
+  if(isAdmin()) tabs.push({k:'settings',l:'🔧 Cài đặt'});
+  return `<div class="nav">${tabs.map(t=>`<button class="nvb ${S.page===t.k?'on':''}" onclick="goto('${t.k}')">${t.l}</button>`).join('')}</div>`;
+}
 window.goto=function(p){S.page=p;render();}
 
 function renderPage(){
@@ -377,8 +435,81 @@ function renderPage(){
   if(S.page==='members') return pageMembers();
   if(S.page==='manage')  return pageManage();
   if(S.page==='settings')return pageSettings();
-  return '';
+  return pageFlowers();
 }
+
+// ─── LOGIN SCREEN ────────────────────────────────────────────────────────────
+function renderLogin(){
+  return `<div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">🌺</div>
+      <div class="login-title">Hoa Viên</div>
+      <div class="login-sub">Đăng nhập để tiếp tục</div>
+      <div class="login-tabs">
+        <button class="login-tab ${S.loginTab==='member'?'on':''}" onclick="S.loginTab='member';render()">Thành viên</button>
+        <button class="login-tab ${S.loginTab==='leader'?'on':''}" onclick="S.loginTab='leader';render()">Hội trưởng</button>
+        <button class="login-tab ${S.loginTab==='admin'?'on':''}" onclick="S.loginTab='admin';render()">Admin</button>
+      </div>
+      ${S.loginTab==='admin'?loginFormAdmin():S.loginTab==='leader'?loginFormLeader():loginFormMember()}
+    </div>
+  </div>`;
+}
+
+function loginFormAdmin(){
+  return `<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="fg-col"><label class="fl">Mật khẩu Admin</label><input class="fi" id="adm-pw" type="password" placeholder="Nhập mật khẩu" onkeydown="if(event.key==='Enter')doLoginAdmin()"></div>
+    <button class="btn btn-g" style="width:100%;justify-content:center" onclick="doLoginAdmin()">🔓 Đăng nhập Admin</button>
+  </div>`;
+}
+function loginFormLeader(){
+  return `<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="fg-col"><label class="fl">Tên đăng nhập</label><input class="fi" id="ld-u" placeholder="username" onkeydown="if(event.key==='Enter')doLoginLeader()"></div>
+    <div class="fg-col"><label class="fl">Mật khẩu</label><input class="fi" id="ld-p" type="password" placeholder="password" onkeydown="if(event.key==='Enter')doLoginLeader()"></div>
+    <button class="btn btn-v" style="width:100%;justify-content:center" onclick="doLoginLeader()">🏆 Đăng nhập Hội trưởng</button>
+  </div>`;
+}
+function loginFormMember(){
+  return `<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="fg-col"><label class="fl">Tên đăng nhập</label><input class="fi" id="mb-u" placeholder="username" onkeydown="if(event.key==='Enter')doLoginMember()"></div>
+    <div class="fg-col"><label class="fl">Mật khẩu</label><input class="fi" id="mb-p" type="password" placeholder="password" onkeydown="if(event.key==='Enter')doLoginMember()"></div>
+    <button class="btn btn-p" style="width:100%;justify-content:center" onclick="doLoginMember()">🌸 Đăng nhập</button>
+  </div>`;
+}
+
+window.doLoginAdmin=function(){
+  const pw=document.getElementById('adm-pw')?.value;
+  if(pw===ADMIN_PW){
+    saveSession({role:'admin',id:'admin',clanId:'',displayName:'Admin'});
+    S.page='flowers';toast('Chào Admin! 🔓');render();
+  } else toast('Sai mật khẩu!','er');
+};
+window.doLoginLeader=function(){
+  const u=document.getElementById('ld-u')?.value.trim();
+  const p=document.getElementById('ld-p')?.value;
+  const l=S.leaders.find(x=>x.username===u&&x.password===p);
+  if(l){
+    saveSession({role:'leader',id:l.id,clanId:l.clanId,displayName:l.displayName});
+    S.page='flowers';toast('Chào '+l.displayName+' 🏆');render();
+  } else toast('Sai tên đăng nhập hoặc mật khẩu!','er');
+};
+window.doLoginMember=function(){
+  const u=document.getElementById('mb-u')?.value.trim();
+  const p=document.getElementById('mb-p')?.value;
+  const m=S.members.find(x=>x.username===u&&x.password===p);
+  if(m){
+    saveSession({role:'member',id:m.id,clanId:m.clanId,displayName:m.displayName});
+    S.msel=new Set(S.ticks[m.id]||[]);
+    S.page='tick';toast('Chào '+m.displayName+' 🌸');render();
+  } else toast('Sai tên đăng nhập hoặc mật khẩu!','er');
+};
+window.doLogout=function(){
+  clearSession();
+  S.msel=new Set();
+  S.page='flowers';
+  S.loginTab='member';
+  toast('Đã đăng xuất');
+  render();
+};
 
 // ─── FLOWERS PAGE ────────────────────────────────────────────────────────────
 function pageFlowers(){
@@ -390,10 +521,32 @@ function pageFlowers(){
   const groups={};
   list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
 
-  const owners={};
+  // Build clan ownership map: for each flower, which clans own it (via their members)
+  // If logged in as leader/member, only show clan(s) relevant
+  const flowerClans={};
   S.flowers.forEach(f=>{
-    owners[f.id]=S.members.filter(m=>(S.ticks[m.id]||[]).includes(f.id)).map(m=>m.displayName);
+    const clanSet=new Set();
+    S.members.forEach(m=>{
+      if((S.ticks[m.id]||[]).includes(f.id)){
+        const clan=S.clans.find(c=>c.id===m.clanId);
+        if(clan) clanSet.add(clan.name);
+      }
+    });
+    flowerClans[f.id]=[...clanSet];
   });
+
+  // For member: only show clans from their own clan
+  const getDisplayClans = (fid) => {
+    if(isMember()){
+      const clanName=myClanName();
+      return flowerClans[fid].filter(n=>n===clanName);
+    }
+    if(isLeader()){
+      const clanName=myClanName();
+      return flowerClans[fid].filter(n=>n===clanName);
+    }
+    return flowerClans[fid]; // admin sees all
+  };
 
   const colorFilter=`<div class="cfbar">
     <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="S.fcolor='all';render()" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${S.flowers.length})</button>
@@ -412,13 +565,13 @@ function pageFlowers(){
     const cv=col(ck);
     return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${flowers.length}</span></div>
     <div class="fg">${flowers.map(f=>{
-      const own=owners[f.id]||[];
+      const dClans=getDisplayClans(f.id);
       return `<div class="fc">
         <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
         <div class="fc-body">
           <div class="fc-name">${esc(f.name)}</div>
           <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
-          ${own.length?`<div class="fc-owns">👤 ${own.slice(0,3).map(n=>esc(n)).join(', ')}${own.length>3?` +${own.length-3}`:''}</div>`:''}
+          ${dClans.length?`<div class="fc-clans">${dClans.map(n=>`<span class="clan-tag">🏅 ${esc(n)}</span>`).join('')}</div>`:''}
         </div>
       </div>`;
     }).join('')}</div>`;
@@ -427,16 +580,12 @@ function pageFlowers(){
   return colorFilter+searchBar+html;
 }
 
-// ─── TICK PAGE ───────────────────────────────────────────────────────────────
+// ─── TICK PAGE (MEMBER ONLY) ──────────────────────────────────────────────────
 function pageTick(){
-  const picker=`<div class="mpicker">
-    <div class="mpicker-title">👤 Chọn tên của bạn</div>
-    <div class="mlist">${S.members.length===0?'<span style="font-size:.83rem;color:var(--mist)">Chưa có thành viên nào</span>':
-      S.members.map(m=>`<button class="mchip ${S.mid===m.id?'on':''}" onclick="pickMember('${m.id}')">${esc(m.displayName)}</button>`).join('')}
-    </div>
-  </div>`;
+  if(!isMember()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ thành viên mới có thể đánh dấu hoa</div>`;
 
-  if(!S.mid) return picker+`<div class="empty"><div class="empty-icon">👆</div>Chọn tên để đánh dấu hoa bạn có</div>`;
+  const me=S.members.find(m=>m.id===S.session.id);
+  const clanName=myClanName();
 
   const q=S.fq.trim().toLowerCase();
   let list=S.flowers;
@@ -452,11 +601,15 @@ function pageTick(){
       return `<button class="ctab ${on?'on':''}" onclick="S.fcolor='${c.k}';render()" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
     }).join('')}
   </div>`;
-
   const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="S.fq=this.value;render()"></div>`;
 
-  const selectedMember=S.members.find(m=>m.id===S.mid);
-  const info=`<div style="font-size:.82rem;color:var(--mist);margin-bottom:14px">Đang đánh dấu cho: <strong style="color:var(--forest)">${esc(selectedMember?.displayName||'')}</strong> — ${S.msel.size}/${S.flowers.length} hoa</div>`;
+  const info=`<div class="card" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="role-chip role-member">🌸 ${esc(me?.displayName||'')}</span>
+      <span class="clan-tag">🏅 Hội ${esc(clanName)}</span>
+      <span style="font-size:.8rem;color:var(--mist);margin-left:auto">${S.msel.size}/${S.flowers.length} hoa đã chọn</span>
+    </div>
+  </div>`;
 
   const html=Object.entries(groups).map(([ck,flowers])=>{
     const cv=col(ck);
@@ -472,17 +625,11 @@ function pageTick(){
     }).join('')}</div>`;
   }).join('');
 
-  return picker+info+colorFilter+searchBar+(list.length?html:`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`);
-}
-
-window.pickMember=function(id){
-  S.mid=id;
-  S.msel=new Set(S.ticks[id]||[]);
-  render();
+  return info+colorFilter+searchBar+(list.length?html:`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`);
 }
 
 window.toggleTick=function(id){
-  if(!S.mid){toast('Chọn tên trước!','wn');return;}
+  if(!isMember()){toast('Chỉ thành viên mới tick được!','wn');return;}
   S.msel.has(id)?S.msel.delete(id):S.msel.add(id);
   const cards=document.querySelectorAll('.tc');
   cards.forEach(card=>{
@@ -495,54 +642,194 @@ window.toggleTick=function(id){
     }
   });
   document.getElementById('sbc').textContent=S.msel.size;
-}
+};
 
 window.saveTicks=async function(){
-  if(!S.mid){toast('Chọn thành viên trước!','wn');return;}
+  if(!isMember()){toast('Chỉ thành viên mới lưu được!','wn');return;}
   const btn=document.getElementById('sbtn');
   btn.disabled=true;btn.innerHTML='<div class="sp"></div>';
   setPulse('loading');
   try {
-    await fsSet('ticks', S.mid, {flowerIds:[...S.msel], updatedAt: new Date().toISOString()});
-    S.ticks[S.mid]=[...S.msel];
+    const memberId=S.session.id;
+    await fsSet('ticks',memberId,{flowerIds:[...S.msel],updatedAt:new Date().toISOString()});
+    S.ticks[memberId]=[...S.msel];
     toast('Đã lưu 🌸');
-  } catch(e){
-    toast('Lỗi lưu dữ liệu: '+e.message,'er');
-  }
+  } catch(e){ toast('Lỗi lưu: '+e.message,'er'); }
   setPulse('');
   btn.disabled=false;btn.innerHTML='💾 Lưu';
-}
+};
 
-// ─── MEMBERS PAGE ────────────────────────────────────────────────────────────
+// ─── MEMBERS PAGE (ADMIN + LEADER) ───────────────────────────────────────────
 function pageMembers(){
-  const sorted=[...S.members].sort((a,b)=>(S.ticks[b.id]||[]).length-(S.ticks[a.id]||[]).length);
+  if(!isAdmin()&&!isLeader()) return `<div class="empty"><div class="empty-icon">🔒</div>Không có quyền xem</div>`;
+
+  // filter members to current clan if leader
+  const myMembers = isLeader()
+    ? S.members.filter(m=>m.clanId===myClanId())
+    : S.members;
+
   const total=S.flowers.length;
+  const clanName = isLeader() ? myClanName() : null;
+
   const statsHtml=`<div class="stats">
-    <div class="sc"><div class="sv">${S.members.length}</div><div class="sl">Thành viên</div></div>
+    <div class="sc"><div class="sv">${myMembers.length}</div><div class="sl">${clanName?'TV Hội '+clanName:'Thành viên'}</div></div>
     <div class="sc"><div class="sv">${total}</div><div class="sl">Loài hoa</div></div>
-    <div class="sc"><div class="sv">${total?Math.round(Object.values(S.ticks).reduce((a,v)=>a+v.length,0)/Math.max(S.members.length,1)):0}</div><div class="sl">TB / người</div></div>
+    <div class="sc"><div class="sv">${total?Math.round(myMembers.reduce((a,m)=>a+(S.ticks[m.id]||[]).length,0)/Math.max(myMembers.length,1)):0}</div><div class="sl">TB / người</div></div>
   </div>`;
+
+  const sorted=[...myMembers].sort((a,b)=>(S.ticks[b.id]||[]).length-(S.ticks[a.id]||[]).length);
   const tableHtml=sorted.length===0
     ?`<div class="empty"><div class="empty-icon">👥</div>Chưa có thành viên</div>`
-    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th><th>Sở hữu</th></tr></thead><tbody>
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th>${isAdmin()?'<th>Hội</th>':''}<th>Sở hữu</th></tr></thead><tbody>
     ${sorted.map((m,i)=>{
       const n=(S.ticks[m.id]||[]).length;
       const pct=total?Math.round(n/total*100):0;
+      const clan=S.clans.find(c=>c.id===m.clanId);
       return `<tr>
         <td style="color:var(--haze);font-weight:800;width:28px">${i+1}</td>
-        <td><div style="font-weight:700">${esc(m.displayName)}</div>${m.alias||m.year?`<div style="font-size:.74rem;color:var(--mist)">${[m.alias,m.year].filter(Boolean).join(' · ')}</div>`:''}</td>
+        <td><div style="font-weight:700">${esc(m.displayName)}</div>${m.alias||m.year?`<div style="font-size:.74rem;color:var(--mist)">${[m.alias,m.year].filter(Boolean).join(' · ')}</div>`:''}<div style="font-size:.72rem;color:var(--haze)">@${esc(m.username)}</div></td>
+        ${isAdmin()?`<td><span class="clan-tag">${clan?'🏅 '+esc(clan.name):'—'}</span></td>`:''}
         <td><div class="mbar-w"><div class="mbar"><div class="mbar-f" style="width:${pct}%"></div></div><span class="mlbl">${n}/${total}</span></div></td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
   return statsHtml+`<div class="card">${tableHtml}</div>`;
 }
 
-// ─── MANAGE PAGE (ADMIN ONLY) ────────────────────────────────────────────────
+// ─── MANAGE PAGE ─────────────────────────────────────────────────────────────
 function pageManage(){
-  if(!S.admin) return `<div class="empty"><div class="empty-icon">🔒</div>Cần đăng nhập admin để quản lý</div>`;
-  return manageFlowers()+manageMembers();
+  if(!isAdmin()&&!isLeader()) return `<div class="empty"><div class="empty-icon">🔒</div>Không có quyền</div>`;
+  if(isLeader()) return manageLeaderSection();
+  // Admin sees everything
+  return manageClans()+manageLeaders()+manageFlowers()+manageAllMembers();
 }
 
+function manageLeaderSection(){
+  // Leader can only manage members of their clan
+  return manageClanMembers();
+}
+
+// ── CLANS (ADMIN) ─────────────────────────────────────────────────────────────
+function manageClans(){
+  const rows=S.clans.map(c=>`<tr>
+    <td><strong>${esc(c.name)}</strong></td>
+    <td style="font-size:.78rem;color:var(--mist)">${S.leaders.filter(l=>l.clanId===c.id).map(l=>esc(l.displayName)).join(', ')||'—'}</td>
+    <td style="font-size:.78rem;color:var(--mist)">${S.members.filter(m=>m.clanId===c.id).length} thành viên</td>
+    <td><button class="ibtn del" onclick="confirmDelClan('${c.id}')">🗑️</button></td>
+  </tr>`).join('');
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="card-title">🏅 Quản lý Hội (Clan) <span style="font-size:.76rem;font-weight:600;color:var(--mist)">(${S.clans.length})</span>
+      <button class="btn btn-v btn-sm" style="margin-left:auto" onclick="openAddClan()">+ Thêm Hội</button>
+    </div>
+    ${S.clans.length===0?`<div class="empty"><div class="empty-icon">🏅</div>Chưa có Hội nào</div>`
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên Hội</th><th>Hội trưởng</th><th>Thành viên</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  </div>`;
+}
+
+window.openAddClan=function(){
+  openModal('🏅 Thêm Hội mới',
+    `<div class="fg-col"><label class="fl">Tên Hội *</label><input class="fi" id="cl-name" placeholder="Hội Hoa Hồng"></div>`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-v" onclick="doAddClan()">Thêm</button>`
+  );
+};
+window.doAddClan=async function(){
+  const name=document.getElementById('cl-name')?.value.trim();
+  if(!name){toast('Nhập tên Hội!','wn');return;}
+  if(S.clans.find(c=>c.name===name)){toast('Tên Hội đã tồn tại!','wn');return;}
+  const btn=document.querySelector('.mbox .btn-v');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="sp"></div>';}
+  setPulse('loading');
+  try {
+    const newId='cl'+Date.now();
+    await fsSet('clans',newId,{name});
+    closeModal();toast('Đã thêm Hội: '+name);
+    await loadAll();render();
+  } catch(e){
+    toast('Lỗi: '+e.message,'er');
+    if(btn){btn.disabled=false;btn.innerHTML='Thêm';}
+  }
+  setPulse('');
+};
+window.confirmDelClan=function(id){
+  const c=S.clans.find(x=>x.id===id);
+  openModal('⚠️ Xóa Hội',`Xóa Hội <b>${esc(c?.name||id)}</b>? Hội trưởng và thành viên thuộc hội này KHÔNG bị xóa nhưng sẽ không còn thuộc hội nào.`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelClan('${id}')">Xóa</button>`);
+};
+window.doDelClan=async function(id){
+  closeModal();setPulse('loading');
+  try {
+    await fsDel('clans',id);
+    toast('Đã xóa Hội');
+  } catch(e){toast('Lỗi: '+e.message,'er');}
+  setPulse('');
+  await loadAll();render();
+};
+
+// ── LEADERS (ADMIN) ───────────────────────────────────────────────────────────
+function manageLeaders(){
+  const rows=S.leaders.map(l=>{
+    const clan=S.clans.find(c=>c.id===l.clanId);
+    return `<tr>
+      <td><strong>${esc(l.displayName)}</strong><div style="font-size:.72rem;color:var(--haze)">@${esc(l.username)}</div></td>
+      <td>${clan?`<span class="clan-tag">🏅 ${esc(clan.name)}</span>`:'<span style="color:var(--haze)">—</span>'}</td>
+      <td><button class="ibtn del" onclick="confirmDelLeader('${l.id}')">🗑️</button></td>
+    </tr>`;
+  }).join('');
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="card-title">🏆 Quản lý Hội trưởng <span style="font-size:.76rem;font-weight:600;color:var(--mist)">(${S.leaders.length})</span>
+      <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddLeader()">+ Thêm HT</button>
+    </div>
+    ${S.leaders.length===0?`<div class="empty"><div class="empty-icon">🏆</div>Chưa có hội trưởng</div>`
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên / Username</th><th>Hội</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  </div>`;
+}
+window.openAddLeader=function(){
+  const clanOpts=S.clans.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  openModal('🏆 Thêm Hội trưởng',
+    `<div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg-col"><label class="fl">Tên hiển thị *</label><input class="fi" id="ld-dn" placeholder="Nguyễn Văn A"></div>
+      <div class="fg-col"><label class="fl">Username *</label><input class="fi" id="ld-un" placeholder="nguyenvana"></div>
+      <div class="fg-col"><label class="fl">Mật khẩu *</label><input class="fi" id="ld-pw" type="password" placeholder="••••••"></div>
+      <div class="fg-col"><label class="fl">Hội quản lý *</label><select class="fi" id="ld-cl">${S.clans.length?clanOpts:'<option value="">— Chưa có Hội nào —</option>'}</select></div>
+    </div>`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doAddLeader()">Thêm</button>`
+  );
+};
+window.doAddLeader=async function(){
+  const dn=document.getElementById('ld-dn')?.value.trim();
+  const un=document.getElementById('ld-un')?.value.trim();
+  const pw=document.getElementById('ld-pw')?.value;
+  const cl=document.getElementById('ld-cl')?.value;
+  if(!dn||!un||!pw){toast('Điền đủ thông tin!','wn');return;}
+  if(!cl){toast('Chọn Hội cho hội trưởng!','wn');return;}
+  if(S.leaders.find(l=>l.username===un)){toast('Username đã tồn tại!','wn');return;}
+  const btn=document.querySelector('.mbox .btn-g');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="sp"></div>';}
+  setPulse('loading');
+  try {
+    const newId='ld'+Date.now();
+    await fsSet('leaders',newId,{username:un,password:pw,clanId:cl,displayName:dn});
+    closeModal();toast('Đã thêm hội trưởng: '+dn);
+    await loadAll();render();
+  } catch(e){
+    toast('Lỗi: '+e.message,'er');
+    if(btn){btn.disabled=false;btn.innerHTML='Thêm';}
+  }
+  setPulse('');
+};
+window.confirmDelLeader=function(id){
+  const l=S.leaders.find(x=>x.id===id);
+  openModal('⚠️ Xóa Hội trưởng',`Xóa hội trưởng <b>${esc(l?.displayName||id)}</b>?`,
+    `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelLeader('${id}')">Xóa</button>`);
+};
+window.doDelLeader=async function(id){
+  closeModal();setPulse('loading');
+  try { await fsDel('leaders',id);toast('Đã xóa hội trưởng'); }
+  catch(e){toast('Lỗi: '+e.message,'er');}
+  setPulse('');
+  await loadAll();render();
+};
+
+// ── FLOWERS (ADMIN) ────────────────────────────────────────────────────────────
 function manageFlowers(){
   const rows=S.flowers.map(f=>{
     const cv=col(f.color);
@@ -565,172 +852,180 @@ function manageFlowers(){
     :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên</th><th>Màu</th><th>Sở hữu</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
   </div>`;
 }
-
-function manageMembers(){
-  const rows=S.members.map(m=>`<tr>
-    <td><strong>${esc(m.displayName)}</strong>${m.alias?`<span style="font-size:.74rem;color:var(--mist);margin-left:6px">${esc(m.alias)}</span>`:''}</td>
-    <td style="font-size:.78rem;color:var(--mist)">${m.year||'—'}</td>
-    <td style="font-size:.78rem;color:var(--mist)">${(S.ticks[m.id]||[]).length} hoa</td>
-    <td><button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button></td>
-  </tr>`).join('');
-  return `<div class="card">
-    <div class="card-title">👥 Quản lý thành viên
-      <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddMember()">+ Thêm</button>
-    </div>
-    ${S.members.length===0?`<div class="empty"><div class="empty-icon">👤</div>Chưa có thành viên</div>`
-    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên</th><th>Năm</th><th>Hoa</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
-  </div>`;
-}
-
-// ADD / EDIT FLOWER
 window.openAddFlower=function(){
-  S._editFlowerId=null; S._editColor='trang';
-  const swatches=COLS.map(c=>`<div class="csw ${c.k==='trang'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
+  S._editFlowerId=null;S._editColor='trang';
+  const sw=COLS.map(c=>`<div class="csw ${c.k==='trang'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('🌸 Thêm hoa mới',
     `<div style="display:flex;flex-direction:column;gap:12px">
       <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" placeholder="Hoa hồng nhung"></div>
-      <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${swatches}</div></div>
+      <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" placeholder="https://..."></div>
-      <div class="fg-col"><label class="fl">Thứ tự sắp xếp</label><input class="fi" id="ef-sort" type="number" placeholder="0" value="0"></div>
+      <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="0"></div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
   );
-}
-
+};
 window.openEditFlower=function(id){
-  const f=S.flowers.find(x=>x.id===id);
-  if(!f) return;
-  S._editFlowerId=id; S._editColor=f.color||'hong';
-  const swatches=COLS.map(c=>`<div class="csw ${c.k===S._editColor?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
+  const f=S.flowers.find(x=>x.id===id);if(!f)return;
+  S._editFlowerId=id;S._editColor=f.color||'trang';
+  const sw=COLS.map(c=>`<div class="csw ${c.k===S._editColor?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('✏️ Sửa hoa',
     `<div style="display:flex;flex-direction:column;gap:12px">
       <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
-      <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${swatches}</div></div>
+      <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" value="${esc(f.imgUrl)}"></div>
-      <div class="fg-col"><label class="fl">Thứ tự sắp xếp</label><input class="fi" id="ef-sort" type="number" value="${f.sortOrder}"></div>
+      <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="${f.sortOrder}"></div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
   );
-}
-
+};
 window.pickColor=function(k){
   S._editColor=k;
   document.querySelectorAll('.csw').forEach(el=>el.classList.remove('on'));
   const sw=document.getElementById('sw-'+k);
   if(sw) sw.classList.add('on');
-}
-
+};
 window.doSaveFlower=async function(){
   const name=document.getElementById('ef-name')?.value.trim();
   if(!name){toast('Nhập tên hoa!','wn');return;}
   const imgUrl=document.getElementById('ef-img')?.value.trim()||'';
   const sortOrder=Number(document.getElementById('ef-sort')?.value)||0;
   const color=S._editColor||'trang';
-  const mbox=document.querySelector('.mbox');
-  const savebtn=mbox?.querySelectorAll('.btn')[1];
-  if(savebtn){savebtn.disabled=true;savebtn.innerHTML='<div class="sp"></div>';}
+  const btn=document.querySelector('.mbox .btn-g');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="sp"></div>';}
   setPulse('loading');
   try {
     if(S._editFlowerId){
-      await fsSet('flowers', S._editFlowerId, {name,color,imgUrl,sortOrder});
+      await fsSet('flowers',S._editFlowerId,{name,color,imgUrl,sortOrder});
       toast('Đã cập nhật hoa');
     } else {
-      const newId='f'+Date.now();
-      await fsSet('flowers', newId, {name,color,imgUrl,sortOrder});
-      toast('Đã thêm hoa mới 🌸');
+      await fsSet('flowers','f'+Date.now(),{name,color,imgUrl,sortOrder});
+      toast('Đã thêm hoa 🌸');
     }
-    closeModal();
-    await loadAll(); render();
+    closeModal();await loadAll();render();
   } catch(e){
     toast('Lỗi: '+e.message,'er');
-    if(savebtn){savebtn.disabled=false;savebtn.innerHTML='💾 Lưu';}
+    if(btn){btn.disabled=false;btn.innerHTML='💾 Lưu';}
   }
   setPulse('');
-}
-
+};
 window.confirmDelFlower=function(id){
   const f=S.flowers.find(x=>x.id===id);
-  openModal('⚠️ Xóa hoa',`Xóa <b>${esc(f?.name||id)}</b>? Các tick liên quan sẽ không bị xóa.`,
+  openModal('⚠️ Xóa hoa',`Xóa <b>${esc(f?.name||id)}</b>?`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelFlower('${id}')">Xóa</button>`);
-}
+};
 window.doDelFlower=async function(id){
-  closeModal(); setPulse('loading');
-  try { await fsDel('flowers', id); toast('Đã xóa hoa'); }
-  catch(e){ toast('Lỗi: '+e.message,'er'); }
-  setPulse('');
-  await loadAll(); render();
+  closeModal();setPulse('loading');
+  try { await fsDel('flowers',id);toast('Đã xóa hoa'); }
+  catch(e){toast('Lỗi: '+e.message,'er');}
+  setPulse('');await loadAll();render();
+};
+
+// ── ALL MEMBERS (ADMIN) ───────────────────────────────────────────────────────
+function manageAllMembers(){
+  const rows=S.members.map(m=>{
+    const clan=S.clans.find(c=>c.id===m.clanId);
+    return `<tr>
+      <td><strong>${esc(m.displayName)}</strong>${m.alias?`<span style="font-size:.74rem;color:var(--mist);margin-left:6px">${esc(m.alias)}</span>`:''}<div style="font-size:.72rem;color:var(--haze)">@${esc(m.username)}</div></td>
+      <td>${clan?`<span class="clan-tag">🏅 ${esc(clan.name)}</span>`:'<span style="color:var(--haze)">—</span>'}</td>
+      <td style="font-size:.78rem;color:var(--mist)">${(S.ticks[m.id]||[]).length} hoa</td>
+      <td><button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button></td>
+    </tr>`;
+  }).join('');
+  return `<div class="card">
+    <div class="card-title">👥 Tất cả thành viên <span style="font-size:.76rem;font-weight:600;color:var(--mist)">(${S.members.length})</span></div>
+    ${S.members.length===0?`<div class="empty"><div class="empty-icon">👤</div>Chưa có thành viên</div>`
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên</th><th>Hội</th><th>Hoa</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  </div>`;
 }
 
-// ADD MEMBER
+// ── CLAN MEMBERS (LEADER) ─────────────────────────────────────────────────────
+function manageClanMembers(){
+  const clanId=myClanId();
+  const clanName=myClanName();
+  const myMembers=S.members.filter(m=>m.clanId===clanId);
+  const rows=myMembers.map(m=>`<tr>
+    <td><strong>${esc(m.displayName)}</strong>${m.alias?`<span style="font-size:.74rem;color:var(--mist);margin-left:6px">${esc(m.alias)}</span>`:''}<div style="font-size:.72rem;color:var(--haze)">@${esc(m.username)}</div></td>
+    <td style="font-size:.78rem;color:var(--mist)">${m.year||'—'}</td>
+    <td style="font-size:.78rem;color:var(--mist)">${(S.ticks[m.id]||[]).length} hoa</td>
+    <td><button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button></td>
+  </tr>`).join('');
+  return `<div class="card">
+    <div class="card-title">👥 Thành viên Hội ${esc(clanName)} <span style="font-size:.76rem;font-weight:600;color:var(--mist)">(${myMembers.length})</span>
+      <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddMember()">+ Thêm TV</button>
+    </div>
+    ${myMembers.length===0?`<div class="empty"><div class="empty-icon">👤</div>Chưa có thành viên</div>`
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>Tên</th><th>Năm sinh</th><th>Hoa</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  </div>`;
+}
+
 window.openAddMember=function(){
+  // If leader: auto-assign to their clan. If admin: can pick clan.
+  const clanSelect = isAdmin()
+    ? `<div class="fg-col"><label class="fl">Hội *</label><select class="fi" id="am-cl">${S.clans.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>`
+    : `<input type="hidden" id="am-cl" value="${myClanId()}">`;
   openModal('👤 Thêm thành viên',
     `<div style="display:flex;flex-direction:column;gap:12px">
       <div class="fg-col"><label class="fl">Tên hiển thị *</label><input class="fi" id="am-d" placeholder="Khánh Ly"></div>
+      <div class="fg-col"><label class="fl">Username *</label><input class="fi" id="am-u" placeholder="khanhly"></div>
+      <div class="fg-col"><label class="fl">Mật khẩu *</label><input class="fi" id="am-p" type="password" placeholder="••••••"></div>
       <div class="fg-col"><label class="fl">Tên game / bí danh</label><input class="fi" id="am-a" placeholder="Mẫn"></div>
       <div class="fg-col"><label class="fl">Năm sinh</label><input class="fi" id="am-y" placeholder="1991" maxlength="4" type="number"></div>
+      ${clanSelect}
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doAddMember()">Thêm</button>`
   );
-}
-
+};
 window.doAddMember=async function(){
   const d=document.getElementById('am-d')?.value.trim();
+  const u=document.getElementById('am-u')?.value.trim();
+  const p=document.getElementById('am-p')?.value;
   const a=document.getElementById('am-a')?.value.trim()||'';
   const y=document.getElementById('am-y')?.value.trim()||'';
-  if(!d){toast('Nhập tên hiển thị!','wn');return;}
-  if(S.members.find(m=>m.displayName===d)){toast('Tên đã tồn tại!','wn');return;}
-  const savebtn=document.querySelector('.mbox .btn-g');
-  if(savebtn){savebtn.disabled=true;savebtn.innerHTML='<div class="sp"></div>';}
+  const cl=document.getElementById('am-cl')?.value;
+  if(!d||!u||!p){toast('Điền đủ thông tin bắt buộc!','wn');return;}
+  if(!cl){toast('Chọn Hội!','wn');return;}
+  if(S.members.find(m=>m.username===u)){toast('Username đã tồn tại!','wn');return;}
+  const btn=document.querySelector('.mbox .btn-g');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="sp"></div>';}
   setPulse('loading');
   try {
+    const leaderId = isLeader() ? S.session.id : '';
     const newId='mb'+Date.now();
-    await fsSet('members', newId, {displayName:d,alias:a,year:y});
-    closeModal(); toast('Đã thêm: '+d);
-    await loadAll(); render();
+    await fsSet('members',newId,{username:u,password:p,displayName:d,alias:a,year:y,clanId:cl,leaderId});
+    closeModal();toast('Đã thêm: '+d);
+    await loadAll();render();
   } catch(e){
     toast('Lỗi: '+e.message,'er');
-    if(savebtn){savebtn.disabled=false;savebtn.innerHTML='Thêm';}
+    if(btn){btn.disabled=false;btn.innerHTML='Thêm';}
   }
   setPulse('');
-}
-
+};
 window.confirmDelMember=function(id){
   const m=S.members.find(x=>x.id===id);
-  openModal('⚠️ Xóa thành viên',`Xóa <b>${esc(m?.displayName||id)}</b>? Dữ liệu tick của thành viên cũng bị xóa.`,
+  openModal('⚠️ Xóa thành viên',`Xóa <b>${esc(m?.displayName||id)}</b>? Dữ liệu tick cũng bị xóa.`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelMember('${id}')">Xóa</button>`);
-}
+};
 window.doDelMember=async function(id){
-  closeModal(); setPulse('loading');
+  closeModal();setPulse('loading');
   try {
-    await Promise.all([fsDel('members',id), fsDel('ticks',id)]);
-    if(S.mid===id){S.mid='';S.msel=new Set();}
+    await Promise.all([fsDel('members',id),fsDel('ticks',id)]);
     toast('Đã xóa thành viên');
-  } catch(e){ toast('Lỗi: '+e.message,'er'); }
+  } catch(e){toast('Lỗi: '+e.message,'er');}
   setPulse('');
-  await loadAll(); render();
-}
+  await loadAll();render();
+};
 
-// ─── SETTINGS PAGE ───────────────────────────────────────────────────────────
+// ─── SETTINGS PAGE (ADMIN ONLY) ──────────────────────────────────────────────
 function pageSettings(){
-  const adminSection=S.admin
-    ?`<div class="card" style="margin-bottom:14px">
-        <div class="card-title">🔓 Admin đang hoạt động</div>
-        <p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Bạn có toàn quyền quản lý dữ liệu.</p>
-        <button class="btn btn-r btn-sm" onclick="doLogout()">Đăng xuất admin</button>
-      </div>`
-    :`<div class="card" style="margin-bottom:14px">
-        <div class="card-title">🔒 Đăng nhập Admin</div>
-        <div class="irow"><input class="fi" id="pw" type="password" placeholder="Mật khẩu admin"><button class="btn btn-g" onclick="doLogin()">Vào</button></div>
-      </div>`;
-
-  const hasConfig = !!loadSavedConfig();
-  return `${adminSection}
-  <div class="card" style="margin-bottom:14px">
+  if(!isAdmin()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ Admin mới truy cập được</div>`;
+  const hasConfig=!!loadSavedConfig();
+  return `<div class="card" style="margin-bottom:14px">
     <div class="card-title">🔥 Firebase Config</div>
     ${hasConfig
-      ?`<p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Đang kết nối Firebase. Paste config mới bên dưới để thay thế.</p>`
+      ?`<p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Đang kết nối Firebase. Paste config mới để thay thế.</p>`
       :`<p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Paste Firebase config JSON vào đây.</p>`}
-    <textarea class="fi fb-textarea" id="fb-cfg" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'>${hasConfig?JSON.stringify(loadSavedConfig(),null,2):''}</textarea>
+    <textarea class="fi fb-textarea" id="fb-cfg" placeholder='{"apiKey":"...","projectId":"..."}'>${hasConfig?JSON.stringify(loadSavedConfig(),null,2):''}</textarea>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
       <button class="btn btn-g" onclick="saveFirebaseConfig()">💾 Lưu & Kết nối</button>
       ${hasConfig?`<button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>`:''}
@@ -740,73 +1035,61 @@ function pageSettings(){
     <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
   </div>`;
 }
-
 window.saveFirebaseConfig=async function(){
   const raw=document.getElementById('fb-cfg')?.value.trim();
   if(!raw){toast('Paste config JSON vào!','wn');return;}
   let cfg;
-  try { cfg=JSON.parse(raw); } catch(e){ toast('JSON không hợp lệ: '+e.message,'er');return; }
-  if(!cfg.projectId){toast('Config thiếu projectId!','wn');return;}
-  localStorage.setItem(CK_FB, JSON.stringify(cfg));
+  try{cfg=JSON.parse(raw);}catch(e){toast('JSON không hợp lệ','er');return;}
+  if(!cfg.projectId){toast('Thiếu projectId!','wn');return;}
+  localStorage.setItem(CK_FB,JSON.stringify(cfg));
   const ok=initFirebase(cfg);
-  if(!ok){toast('Khởi động Firebase thất bại','er');return;}
-  toast('Đã kết nối Firebase 🔥');
-  await loadAll(); render();
-}
-
-window.doLogin=function(){
-  const pw=document.getElementById('pw')?.value;
-  if(pw===ADMIN_PW){S.admin=true;localStorage.setItem(CK_ADMIN,'1');toast('Chào admin! 🌿');render();}
-  else toast('Sai mật khẩu!','er');
-}
-window.doLogout=function(){S.admin=false;localStorage.removeItem(CK_ADMIN);toast('Đã đăng xuất');render();}
-
-window.retry=async function(){setPulse('loading');await loadAll();render();}
-
+  if(!ok){toast('Firebase thất bại','er');return;}
+  toast('Đã kết nối 🔥');
+  await loadAll();render();
+};
+window.retry=async function(){setPulse('loading');await loadAll();render();};
 window.confirmReset=function(){
-  openModal('🔌 Ngắt kết nối','Xóa cấu hình Firebase và quay về màn hình cài đặt?',
+  openModal('🔌 Ngắt kết nối','Xóa cấu hình Firebase?',
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doReset()">Ngắt</button>`);
-}
+};
 window.doReset=function(){
   closeModal();
   localStorage.removeItem(CK_FB);
   db=null;
-  S={...S,loaded:false,err:null,flowers:[],members:[],ticks:{},page:'flowers',mid:'',msel:new Set()};
+  S={...S,loaded:false,err:null,flowers:[],clans:[],leaders:[],members:[],ticks:{},page:'flowers',msel:new Set()};
   render();
-}
+};
 
 // ─── SETUP SCREEN ────────────────────────────────────────────────────────────
 function renderSetup(){
   return `<div class="setup">
     <h2>🌺 Chào mừng đến Hoa Viên</h2>
-    <p>Kết nối Firebase để lưu dữ liệu. Chỉ cần tạo project và paste config — miễn phí, không cần thẻ tín dụng.</p>
+    <p>Kết nối Firebase để lưu dữ liệu.</p>
     <div class="setup-steps">
-      <div class="setup-step"><div class="setup-num">1</div><div class="setup-text">Vào <strong>console.firebase.google.com</strong> → <em>Add project</em> → đặt tên → tạo xong.</div></div>
-      <div class="setup-step"><div class="setup-num">2</div><div class="setup-text">Trong project: <em>Project settings</em> → <em>Your apps</em> → click icon <strong>&lt;/&gt;</strong> (Web) → đăng ký app.</div></div>
-      <div class="setup-step"><div class="setup-num">3</div><div class="setup-text">Copy đoạn <code>firebaseConfig = { ... }</code> — chỉ cần phần JSON bên trong dấu ngoặc nhọn.</div></div>
-      <div class="setup-step"><div class="setup-num">4</div><div class="setup-text">Vào <em>Firestore Database</em> → <em>Create database</em> → chọn <strong>Start in test mode</strong> → chọn region → Done.</div></div>
-      <div class="setup-step"><div class="setup-num">5</div><div class="setup-text">Paste config vào ô bên dưới và nhấn <strong>Kết nối</strong>.</div></div>
+      <div class="setup-step"><div class="setup-num">1</div><div class="setup-text">Vào <strong>console.firebase.google.com</strong> → tạo project mới.</div></div>
+      <div class="setup-step"><div class="setup-num">2</div><div class="setup-text"><em>Project settings</em> → <em>Your apps</em> → icon <strong>&lt;/&gt;</strong> → đăng ký app web.</div></div>
+      <div class="setup-step"><div class="setup-num">3</div><div class="setup-text">Copy đoạn <code>firebaseConfig = { ... }</code> và paste vào ô bên dưới.</div></div>
+      <div class="setup-step"><div class="setup-num">4</div><div class="setup-text"><em>Firestore Database</em> → <em>Create database</em> → <strong>Start in test mode</strong>.</div></div>
     </div>
     <div class="fg-col" style="margin-bottom:12px">
       <label class="fl">Firebase Config JSON</label>
-      <textarea class="fi fb-textarea" id="setup-cfg" placeholder='{"apiKey":"AIza...","authDomain":"my-app.firebaseapp.com","projectId":"my-app","storageBucket":"my-app.appspot.com","messagingSenderId":"123456","appId":"1:123456:web:abc123"}'></textarea>
+      <textarea class="fi fb-textarea" id="setup-cfg" placeholder='{"apiKey":"...","projectId":"..."}'></textarea>
     </div>
     <button class="btn btn-g" onclick="setupFirebase()" style="width:100%;justify-content:center">🔥 Kết nối Firebase</button>
   </div>`;
 }
-
 window.setupFirebase=async function(){
   const raw=document.getElementById('setup-cfg')?.value.trim();
   if(!raw){toast('Paste config JSON vào!','wn');return;}
   let cfg;
-  try { cfg=JSON.parse(raw); } catch(e){ toast('JSON không hợp lệ!','er');return; }
-  if(!cfg.projectId){toast('Config thiếu projectId!','wn');return;}
-  localStorage.setItem(CK_FB, JSON.stringify(cfg));
+  try{cfg=JSON.parse(raw);}catch(e){toast('JSON không hợp lệ!','er');return;}
+  if(!cfg.projectId){toast('Thiếu projectId!','wn');return;}
+  localStorage.setItem(CK_FB,JSON.stringify(cfg));
   const ok=initFirebase(cfg);
   if(!ok){toast('Khởi tạo Firebase thất bại','er');return;}
   toast('Đã kết nối 🔥');
-  render(); await loadAll(); render();
-}
+  render();await loadAll();render();
+};
 
 function renderErr(){
   return `<div class="errbox">
@@ -821,8 +1104,7 @@ function renderErr(){
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function init(){
-  // Ưu tiên config nhúng sẵn, fallback sang localStorage nếu có
-  const cfg = FIREBASE_CONFIG || loadSavedConfig();
+  const cfg=FIREBASE_CONFIG||loadSavedConfig();
   if(cfg){
     const ok=initFirebase(cfg);
     if(ok){ render(); await loadAll(); render(); return; }
