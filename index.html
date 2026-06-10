@@ -962,7 +962,9 @@ window.doDelLeader=async function(id){
   await loadAll();render();
 };
 
-// ── CLOUDINARY UPLOAD + AI OCR ────────────────────────────────────────────────
+// ── CLOUDINARY UPLOAD + GEMINI OCR ───────────────────────────────────────────
+const GEMINI_KEY='AQ.Ab8RN6K9u18k6DYkF4G6hv4NagBHuwIwtCWENkzJsgBrigbdzg';
+
 window.triggerImgUpload=function(){
   document.getElementById('ef-img-file')?.click();
 };
@@ -974,23 +976,21 @@ async function detectFlowerName(file){
     r.onerror=()=>rej(new Error('Đọc file thất bại'));
     r.readAsDataURL(file);
   });
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:60,
-      messages:[{
-        role:'user',
-        content:[
-          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:base64}},
-          {type:'text',text:'Đây là ảnh từ game hoa. Hãy đọc chính xác tên hoa hiển thị trong ảnh (thường là dòng chữ lớn ở đầu hoặc giữa ảnh). Chỉ trả về đúng tên hoa, không thêm gì khác. Nếu không thấy tên thì trả về: KHÔNG_ĐỌC_ĐƯỢC'}
-        ]
-      }]
-    })
-  });
+  const resp=await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+    {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[
+          {inline_data:{mime_type:file.type||'image/jpeg',data:base64}},
+          {text:'Đây là ảnh từ game hoa. Hãy đọc chính xác tên hoa hiển thị trong ảnh (thường là dòng chữ lớn ở đầu hoặc giữa ảnh). Chỉ trả về đúng tên hoa, không thêm gì khác. Nếu không thấy tên thì trả về: KHÔNG_ĐỌC_ĐƯỢC'}
+        ]}]
+      })
+    }
+  );
   const data=await resp.json();
-  const text=(data.content||[]).find(b=>b.type==='text')?.text?.trim()||'';
+  const text=data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
   if(!text||text==='KHÔNG_ĐỌC_ĐƯỢC') return null;
   return text;
 }
@@ -1006,15 +1006,13 @@ window.onImgFileChange=async function(input){
   const nameInput=document.getElementById('ef-name');
   const aiStatus=document.getElementById('ef-ai-status');
 
-  // Show local preview ngay lập tức
+  // Hiện preview local ngay lập tức
   if(preview){preview.src=URL.createObjectURL(file);preview.style.display='block';}
-
   uploadBtn.disabled=true;
   uploadBtn.innerHTML='<div class="sp"></div> Đang xử lý...';
 
-  // ── BƯỚC 1: AI nhận diện tên (chỉ khi ô tên đang trống) ──────────────────
-  const shouldDetect = nameInput && !nameInput.value.trim();
-  if(shouldDetect){
+  // ── BƯỚC 1: Gemini nhận diện tên (chỉ khi ô tên trống) ───────────────────
+  if(nameInput && !nameInput.value.trim()){
     if(aiStatus) aiStatus.textContent='🤖 Đang nhận diện...';
     try {
       const name=await detectFlowerName(file);
@@ -1028,8 +1026,8 @@ window.onImgFileChange=async function(input){
         toast('Không đọc được tên, hãy nhập tay','wn');
       }
     } catch(e){
-      console.warn('AI OCR error:',e);
-      toast('AI lỗi, hãy nhập tên tay','wn');
+      console.warn('Gemini OCR error:',e);
+      toast('Không nhận diện được, hãy nhập tay','wn');
     }
     if(aiStatus) aiStatus.textContent='';
   }
