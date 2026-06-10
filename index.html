@@ -254,7 +254,9 @@ function ftch(url, opts={}, ms=14000){
 }
 
 // ─── SHEETDB API ───────────────────────────────────────────────────────────
-const base = tab => `${API_URL}/sheets/${encodeURIComponent(tab)}`;
+// SheetDB dùng ?sheet=TabName để chỉ định tab
+const base  = tab => `${API_URL}?sheet=${encodeURIComponent(tab)}`;
+const baseQ = (tab,col,val) => `${API_URL}/${encodeURIComponent(col)}/${encodeURIComponent(val)}?sheet=${encodeURIComponent(tab)}`;
 
 async function sGet(tab){
   try{
@@ -274,14 +276,14 @@ async function sPost(tab,data){
 
 async function sPatch(tab,col,val,data){
   try{
-    const r=await ftch(`${base(tab)}/${encodeURIComponent(col)}/${encodeURIComponent(val)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({data})});
+    const r=await ftch(baseQ(tab,col,val),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({data})});
     return await r.json();
   }catch(e){return{error:e.message};}
 }
 
 async function sDel(tab,col,val){
   try{
-    const r=await ftch(`${base(tab)}/${encodeURIComponent(col)}/${encodeURIComponent(val)}`,{method:'DELETE'});
+    const r=await ftch(baseQ(tab,col,val),{method:'DELETE'});
     return await r.json();
   }catch(e){return{error:e.message};}
 }
