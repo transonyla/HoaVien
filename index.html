@@ -309,6 +309,11 @@ function openModal(t,b,f){
 function closeModal(){document.getElementById('modal').classList.remove('on');}
 window.closeModal=closeModal;
 
+// ─── EXPOSED STATE SETTERS (needed by inline onclick in ES module) ────────────
+window.setLoginTab=function(t){S.loginTab=t;render();};
+window.setFcolor=function(v){S.fcolor=v;render();};
+window.setFq=function(v){S.fq=v;render();};
+
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -446,9 +451,9 @@ function renderLogin(){
       <div class="login-title">Hoa Viên</div>
       <div class="login-sub">Đăng nhập để tiếp tục</div>
       <div class="login-tabs">
-        <button class="login-tab ${S.loginTab==='member'?'on':''}" onclick="S.loginTab='member';render()">Thành viên</button>
-        <button class="login-tab ${S.loginTab==='leader'?'on':''}" onclick="S.loginTab='leader';render()">Hội trưởng</button>
-        <button class="login-tab ${S.loginTab==='admin'?'on':''}" onclick="S.loginTab='admin';render()">Admin</button>
+        <button class="login-tab ${S.loginTab==='member'?'on':''}" onclick="setLoginTab('member')">Thành viên</button>
+        <button class="login-tab ${S.loginTab==='leader'?'on':''}" onclick="setLoginTab('leader')">Hội trưởng</button>
+        <button class="login-tab ${S.loginTab==='admin'?'on':''}" onclick="setLoginTab('admin')">Admin</button>
       </div>
       ${S.loginTab==='admin'?loginFormAdmin():S.loginTab==='leader'?loginFormLeader():loginFormMember()}
     </div>
@@ -549,15 +554,15 @@ function pageFlowers(){
   };
 
   const colorFilter=`<div class="cfbar">
-    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="S.fcolor='all';render()" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${S.flowers.length})</button>
+    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${S.flowers.length})</button>
     ${COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
       const cnt=S.flowers.filter(f=>f.color===c.k).length;
       const on=S.fcolor===c.k;
-      return `<button class="ctab ${on?'on':''}" onclick="S.fcolor='${c.k}';render()" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l} (${cnt})</button>`;
+      return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l} (${cnt})</button>`;
     }).join('')}
   </div>`;
 
-  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="fq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="S.fq=this.value;render()"></div>`;
+  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="fq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="setFq(this.value)"></div>`;
 
   if(!list.length) return colorFilter+searchBar+`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy hoa nào</div>`;
 
@@ -595,13 +600,13 @@ function pageTick(){
   list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
 
   const colorFilter=`<div class="cfbar">
-    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="S.fcolor='all';render()" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả</button>
+    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả</button>
     ${COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
       const on=S.fcolor===c.k;
-      return `<button class="ctab ${on?'on':''}" onclick="S.fcolor='${c.k}';render()" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
+      return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
     }).join('')}
   </div>`;
-  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="S.fq=this.value;render()"></div>`;
+  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="setFq(this.value)"></div>`;
 
   const info=`<div class="card" style="margin-bottom:14px">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
