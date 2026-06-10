@@ -400,7 +400,7 @@ function render(){
 
   // savebar
   const sb=document.getElementById('savebar');
-  if(S.page==='tick'&&isMember()){sb.classList.add('on');document.getElementById('sbc').textContent=S.msel.size;}
+  if(S.page==='tick'&&(isMember()||isLeader())){sb.classList.add('on');document.getElementById('sbc').textContent=S.msel.size;}
   else sb.classList.remove('on');
 
   // header user area
@@ -426,7 +426,7 @@ function renderBarUser(){
 function renderNav(){
   const tabs=[];
   if(isAdmin()||isLeader()||isMember()) tabs.push({k:'flowers',l:'🌸 Hoa'});
-  if(isMember()) tabs.push({k:'tick',l:'✅ Đánh dấu'});
+  if(isMember()||isLeader()) tabs.push({k:'tick',l:'✅ Đánh dấu'});
   if(isAdmin()||isLeader()) tabs.push({k:'members',l:'👥 Thành viên'});
   if(isAdmin()||isLeader()) tabs.push({k:'manage',l:'⚙️ Quản lý'});
   if(isAdmin()) tabs.push({k:'settings',l:'🔧 Cài đặt'});
@@ -494,6 +494,7 @@ window.doLoginLeader=function(){
   const l=S.leaders.find(x=>x.username===u&&x.password===p);
   if(l){
     saveSession({role:'leader',id:l.id,clanId:l.clanId,displayName:l.displayName});
+    S.msel=new Set(S.ticks[l.id]||[]);
     S.page='flowers';toast('Chào '+l.displayName+' 🏆');render();
   } else toast('Sai tên đăng nhập hoặc mật khẩu!','er');
 };
@@ -526,31 +527,37 @@ function pageFlowers(){
   const groups={};
   list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
 
-  // Build clan ownership map: for each flower, which clans own it (via their members)
-  // If logged in as leader/member, only show clan(s) relevant
+  // Build clan + member ownership map: for each flower, which clans/members own it
   const flowerClans={};
+  const flowerMembers={}; // {flowerId: [{displayName, clanId}]}
   S.flowers.forEach(f=>{
     const clanSet=new Set();
+    const mList=[];
     S.members.forEach(m=>{
       if((S.ticks[m.id]||[]).includes(f.id)){
         const clan=S.clans.find(c=>c.id===m.clanId);
         if(clan) clanSet.add(clan.name);
+        mList.push({displayName:m.displayName,clanId:m.clanId});
       }
     });
     flowerClans[f.id]=[...clanSet];
+    flowerMembers[f.id]=mList;
   });
 
-  // For member: only show clans from their own clan
+  // For member/leader: only show data from their own clan
   const getDisplayClans = (fid) => {
-    if(isMember()){
-      const clanName=myClanName();
-      return flowerClans[fid].filter(n=>n===clanName);
-    }
-    if(isLeader()){
+    if(isMember()||isLeader()){
       const clanName=myClanName();
       return flowerClans[fid].filter(n=>n===clanName);
     }
     return flowerClans[fid]; // admin sees all
+  };
+  const getDisplayMembers = (fid) => {
+    if(isMember()||isLeader()){
+      const cid=myClanId();
+      return flowerMembers[fid].filter(m=>m.clanId===cid);
+    }
+    return flowerMembers[fid]; // admin sees all
   };
 
   const colorFilter=`<div class="cfbar">
@@ -571,12 +578,14 @@ function pageFlowers(){
     return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${flowers.length}</span></div>
     <div class="fg">${flowers.map(f=>{
       const dClans=getDisplayClans(f.id);
+      const dMembers=getDisplayMembers(f.id);
       return `<div class="fc">
         <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
         <div class="fc-body">
           <div class="fc-name">${esc(f.name)}</div>
           <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
           ${dClans.length?`<div class="fc-clans">${dClans.map(n=>`<span class="clan-tag">🏅 ${esc(n)}</span>`).join('')}</div>`:''}
+          ${dMembers.length?`<div class="fc-clans">${dMembers.map(m=>`<span class="clan-tag" style="background:#e0f2fe;color:#0369a1">👤 ${esc(m.displayName)}</span>`).join('')}</div>`:''}
         </div>
       </div>`;
     }).join('')}</div>`;
@@ -587,10 +596,21 @@ function pageFlowers(){
 
 // ─── TICK PAGE (MEMBER ONLY) ──────────────────────────────────────────────────
 function pageTick(){
-  if(!isMember()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ thành viên mới có thể đánh dấu hoa</div>`;
+  if(!isMember()&&!isLeader()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ thành viên mới có thể đánh dấu hoa</div>`;
 
-  const me=S.members.find(m=>m.id===S.session.id);
+  // For leader: find their member record (same username in members collection)
+  // Leaders tick under their own leader id
+  const myId = S.session.id;
   const clanName=myClanName();
+
+  // Init msel from ticks if not already (leader joining tick page)
+  if(isLeader() && S.msel.size===0 && (S.ticks[myId]||[]).length>0){
+    S.msel=new Set(S.ticks[myId]||[]);
+  }
+
+  const me = isMember()
+    ? S.members.find(m=>m.id===myId)
+    : S.leaders.find(l=>l.id===myId);
 
   const q=S.fq.trim().toLowerCase();
   let list=S.flowers;
@@ -610,7 +630,7 @@ function pageTick(){
 
   const info=`<div class="card" style="margin-bottom:14px">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span class="role-chip role-member">🌸 ${esc(me?.displayName||'')}</span>
+      ${isLeader()?`<span class="role-chip role-leader">🏆 ${esc(me?.displayName||'')}</span>`:`<span class="role-chip role-member">🌸 ${esc(me?.displayName||'')}</span>`}
       <span class="clan-tag">🏅 Hội ${esc(clanName)}</span>
       <span style="font-size:.8rem;color:var(--mist);margin-left:auto">${S.msel.size}/${S.flowers.length} hoa đã chọn</span>
     </div>
@@ -634,7 +654,7 @@ function pageTick(){
 }
 
 window.toggleTick=function(id){
-  if(!isMember()){toast('Chỉ thành viên mới tick được!','wn');return;}
+  if(!isMember()&&!isLeader()){toast('Chỉ thành viên mới tick được!','wn');return;}
   S.msel.has(id)?S.msel.delete(id):S.msel.add(id);
   const cards=document.querySelectorAll('.tc');
   cards.forEach(card=>{
@@ -650,7 +670,7 @@ window.toggleTick=function(id){
 };
 
 window.saveTicks=async function(){
-  if(!isMember()){toast('Chỉ thành viên mới lưu được!','wn');return;}
+  if(!isMember()&&!isLeader()){toast('Chỉ thành viên mới lưu được!','wn');return;}
   const btn=document.getElementById('sbtn');
   btn.disabled=true;btn.innerHTML='<div class="sp"></div>';
   setPulse('loading');
