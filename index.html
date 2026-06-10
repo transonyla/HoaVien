@@ -540,6 +540,13 @@ function pageFlowers(){
         mList.push({displayName:m.displayName,clanId:m.clanId});
       }
     });
+    S.leaders.forEach(l=>{
+      if((S.ticks[l.id]||[]).includes(f.id)){
+        const clan=S.clans.find(c=>c.id===l.clanId);
+        if(clan) clanSet.add(clan.name);
+        mList.push({displayName:l.displayName,clanId:l.clanId});
+      }
+    });
     flowerClans[f.id]=[...clanSet];
     flowerMembers[f.id]=mList;
   });
