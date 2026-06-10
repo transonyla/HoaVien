@@ -696,8 +696,8 @@ function pageTick(){
   const myId = S.session.id;
   const clanName=myClanName();
 
-  // Init msel from ticks if not already (leader joining tick page)
-  if(isLeader() && S.msel.size===0 && (S.ticks[myId]||[]).length>0){
+  // Init msel from ticks if not already (member or leader joining tick page)
+  if((isMember()||isLeader()) && S.msel.size===0 && (S.ticks[myId]||[]).length>0){
     S.msel=new Set(S.ticks[myId]||[]);
   }
 
