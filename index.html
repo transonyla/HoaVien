@@ -210,12 +210,12 @@ const ADMIN_PW = 'hoavien2024'; // ← đổi mật khẩu admin ở đây
 
 // ─── COLORS (bỏ vàng và cam) ─────────────────────────────────────────────────
 const COLS = [
-  {k:'hong', l:'Hồng',  h:'#ec4899'},
-  {k:'do',   l:'Đỏ',    h:'#ef4444'},
-  {k:'xanh', l:'Xanh lá', h:'#22c55e'},
-  {k:'lam',  l:'Xanh lam', h:'#3b82f6'},
-  {k:'tim',  l:'Tím',   h:'#8b5cf6'},
   {k:'trang',l:'Trắng/Xám', h:'#94a3b8'},
+  {k:'xanh', l:'Xanh lá',   h:'#22c55e'},
+  {k:'lam',  l:'Xanh lam',  h:'#3b82f6'},
+  {k:'tim',  l:'Tím',        h:'#8b5cf6'},
+  {k:'cam',  l:'Cam',        h:'#f97316'},
+  {k:'do',   l:'Đỏ',         h:'#ef4444'},
 ];
 const CM = Object.fromEntries(COLS.map(c=>[c.k,c]));
 const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
@@ -573,8 +573,8 @@ function manageMembers(){
 
 // ADD / EDIT FLOWER
 window.openAddFlower=function(){
-  S._editFlowerId=null; S._editColor='hong';
-  const swatches=COLS.map(c=>`<div class="csw ${c.k==='hong'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
+  S._editFlowerId=null; S._editColor='trang';
+  const swatches=COLS.map(c=>`<div class="csw ${c.k==='trang'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('🌸 Thêm hoa mới',
     `<div style="display:flex;flex-direction:column;gap:12px">
       <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" placeholder="Hoa hồng nhung"></div>
@@ -614,7 +614,7 @@ window.doSaveFlower=async function(){
   if(!name){toast('Nhập tên hoa!','wn');return;}
   const imgUrl=document.getElementById('ef-img')?.value.trim()||'';
   const sortOrder=Number(document.getElementById('ef-sort')?.value)||0;
-  const color=S._editColor||'hong';
+  const color=S._editColor||'trang';
   const mbox=document.querySelector('.mbox');
   const savebtn=mbox?.querySelectorAll('.btn')[1];
   if(savebtn){savebtn.disabled=true;savebtn.innerHTML='<div class="sp"></div>';}
