@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌺 Hoa Viên</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root {
   --forest:#1a3a22;--forest2:#2d5438;--leaf:#4a8c5c;--mint:#c8e6c9;--sage:#e8f5e9;
@@ -963,27 +962,46 @@ window.doDelLeader=async function(id){
   await loadAll();render();
 };
 
-// ── CLOUDINARY UPLOAD + TESSERACT OCR ────────────────────────────────────────
+// ── CLOUDINARY UPLOAD + CLAUDE VISION OCR ────────────────────────────────────
+const CK_CLAUDE = 'hv5_claude_key';
+function loadClaudeKey(){ return localStorage.getItem(CK_CLAUDE)||''; }
+
 window.triggerImgUpload=function(){
   document.getElementById('ef-img-file')?.click();
 };
 
 async function detectFlowerName(file){
-  const url=URL.createObjectURL(file);
-  try {
-    const worker=await Tesseract.createWorker(['vie','eng'],1,{logger:()=>{}});
-    const {data}=await worker.recognize(url);
-    await worker.terminate();
-    URL.revokeObjectURL(url);
-    const best=data.lines
-      .filter(l=>l.confidence>30&&l.text.trim().length>1)
-      .sort((a,b)=>b.confidence-a.confidence)[0];
-    const name=best?.text?.trim().replace(/\n/g,' ')||'';
-    return name||null;
-  } catch(e){
-    URL.revokeObjectURL(url);
-    throw e;
-  }
+  const key=loadClaudeKey();
+  if(!key) throw new Error('Chưa cài Claude API Key (vào ⚙️ Cài đặt → dán key vào)');
+  const base64=await new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=()=>rej(new Error('Đọc file thất bại'));
+    r.readAsDataURL(file);
+  });
+  const mediaType=file.type||'image/jpeg';
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true',
+    },
+    body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:64,
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+        {type:'text',text:'Đây là ảnh từ game hoa. Hãy đọc chính xác tên hoa hiển thị trong ảnh (thường là dòng chữ lớn ở đầu hoặc giữa ảnh, trên nền banner/bảng tên). Chỉ trả về đúng tên hoa, không thêm gì khác. Nếu không thấy tên thì trả về: KHÔNG_ĐỌC_ĐƯỢC'}
+      ]}]
+    })
+  });
+  const data=await resp.json();
+  if(data.error) throw new Error('Claude lỗi: '+data.error.message);
+  const text=data.content?.[0]?.text?.trim()||'';
+  if(!text||text==='KHÔNG_ĐỌC_ĐƯỢC') return null;
+  return text;
 }
 
 window.onImgFileChange=async function(input){
@@ -1004,7 +1022,7 @@ window.onImgFileChange=async function(input){
 
   // ── BƯỚC 1: Gemini nhận diện tên (chỉ khi ô tên trống) ───────────────────
   if(nameInput && !nameInput.value.trim()){
-    if(aiStatus) aiStatus.textContent='🔍 Đang đọc chữ...';
+    if(aiStatus) aiStatus.textContent='🤖 Đang nhận diện...';
     try {
       const name=await detectFlowerName(file);
       if(name){
@@ -1250,6 +1268,8 @@ window.doDelMember=async function(id){
 function pageSettings(){
   if(!isAdmin()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ Admin mới truy cập được</div>`;
   const hasConfig=!!loadSavedConfig();
+  const claudeKey=loadClaudeKey();
+  const keyMasked=claudeKey?claudeKey.slice(0,12)+'••••••••••••':'';
   return `<div class="card" style="margin-bottom:14px">
     <div class="card-title">🔥 Firebase Config</div>
     ${hasConfig
@@ -1261,8 +1281,22 @@ function pageSettings(){
       ${hasConfig?`<button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>`:''}
     </div>
   </div>
-
-  <div class="card">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">🤖 Claude API Key
+      <span style="font-size:.72rem;font-weight:500;margin-left:4px;color:${claudeKey?'var(--leaf)':'#ef9a9a'}">${claudeKey?'● Đã cài':'● Chưa cài — nhận diện hoa sẽ không hoạt động'}</span>
+    </div>
+    <p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Dùng để nhận diện tên hoa từ ảnh. Key lưu trên máy này, không gửi lên Firebase. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--leaf)">Lấy key tại console.anthropic.com →</a></p>
+    ${claudeKey?`<div style="font-size:.78rem;color:var(--mist);background:var(--sage);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-family:monospace">${keyMasked}</div>`:''}
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="fi" id="claude-key-input" type="password" placeholder="sk-ant-..." style="flex:1;font-family:monospace;font-size:.82rem">
+      <button class="btn btn-o btn-sm" type="button" onclick="toggleClaudeKeyVis()">👁️</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" onclick="doSaveClaudeKey()">💾 Lưu Key</button>
+      ${claudeKey?`<button class="btn btn-r btn-sm" onclick="doDeleteClaudeKey()">🗑️ Xóa Key</button>`:''}
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
     <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
   </div>`;
 }
@@ -1277,6 +1311,24 @@ window.saveFirebaseConfig=async function(){
   if(!ok){toast('Firebase thất bại','er');return;}
   toast('Đã kết nối 🔥');
   await loadAll();render();
+};
+window.doSaveClaudeKey=function(){
+  const k=document.getElementById('claude-key-input')?.value.trim();
+  if(!k){toast('Nhập Claude API Key!','wn');return;}
+  if(!k.startsWith('sk-ant-')){toast('Key phải bắt đầu bằng sk-ant-...','wn');return;}
+  localStorage.setItem(CK_CLAUDE,k);
+  toast('Đã lưu Claude API Key 🤖');
+  render();
+};
+window.doDeleteClaudeKey=function(){
+  localStorage.removeItem(CK_CLAUDE);
+  toast('Đã xóa Claude API Key','wn');
+  render();
+};
+window.toggleClaudeKeyVis=function(){
+  const inp=document.getElementById('claude-key-input');
+  if(!inp) return;
+  inp.type=inp.type==='password'?'text':'password';
 };
 window.retry=async function(){setPulse('loading');await loadAll();render();};
 window.confirmReset=function(){
