@@ -584,7 +584,19 @@ function pageFlowers(){
 
   const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="fq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="setFq(this.value)"></div>`;
 
-  if(!list.length) return colorFilter+searchBar+`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy hoa nào</div>`;
+  // For member/leader: only show flowers that at least 1 member in their clan has ticked
+  if(isMember()||isLeader()){
+    const cid=myClanId();
+    const clanMemberIds=S.members.filter(m=>m.clanId===cid).map(m=>m.id);
+    const clanLeaderIds=S.leaders.filter(l=>l.clanId===cid).map(l=>l.id);
+    const allIds=[...clanMemberIds,...clanLeaderIds];
+    list=list.filter(f=>allIds.some(id=>(S.ticks[id]||[]).includes(f.id)));
+    // rebuild groups after filter
+    Object.keys(groups).forEach(k=>delete groups[k]);
+    list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
+  }
+
+  if(!list.length) return colorFilter+searchBar+`<div class="empty"><div class="empty-icon">🌿</div>Chưa có hoa nào được đánh dấu trong hội</div>`;
 
   const html=Object.entries(groups).map(([ck,flowers])=>{
     const cv=col(ck);
