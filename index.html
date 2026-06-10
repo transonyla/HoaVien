@@ -241,7 +241,7 @@ const COLS = [
   {k:'lam',  l:'Xanh lam',  h:'#3b82f6'},
   {k:'tim',  l:'Tím',        h:'#8b5cf6'},
   {k:'cam',  l:'Cam',        h:'#f97316'},
-  {k:'do',   l:'Đỏ',         h:'#ef4444'},
+  {k:'do',   l:'Đỏ hồng',    h:'#e91e8c'},
 ];
 const CM = Object.fromEntries(COLS.map(c=>[c.k,c]));
 const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
@@ -573,12 +573,26 @@ function pageFlowers(){
     return flowerMembers[fid]; // admin sees all
   };
 
+  // Pre-compute owned counts per color for member/leader
+  const getOwnedCount = (colorKey) => {
+    if(!isMember()&&!isLeader()) return null;
+    const cid=myClanId();
+    const allIds=[
+      ...S.members.filter(m=>m.clanId===cid).map(m=>m.id),
+      ...S.leaders.filter(l=>l.clanId===cid).map(l=>l.id)
+    ];
+    const flowers = colorKey==='all' ? S.flowers : S.flowers.filter(f=>f.color===colorKey);
+    return flowers.filter(f=>allIds.some(id=>(S.ticks[id]||[]).includes(f.id))).length;
+  };
+  const totalAll=S.flowers.length;
+  const ownedAll=isMember()||isLeader()?getOwnedCount('all'):null;
   const colorFilter=`<div class="cfbar">
-    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${S.flowers.length})</button>
+    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${ownedAll!==null?ownedAll+'/'+totalAll:totalAll})</button>
     ${COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
-      const cnt=S.flowers.filter(f=>f.color===c.k).length;
+      const total=S.flowers.filter(f=>f.color===c.k).length;
+      const owned=isMember()||isLeader()?getOwnedCount(c.k):null;
       const on=S.fcolor===c.k;
-      return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l} (${cnt})</button>`;
+      return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l} (${owned!==null?owned+'/'+total:total})</button>`;
     }).join('')}
   </div>`;
 
@@ -600,14 +614,16 @@ function pageFlowers(){
 
   const html=Object.entries(groups).map(([ck,flowers])=>{
     const cv=col(ck);
-    return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${flowers.length}</span></div>
+    const totalInColor=S.flowers.filter(f=>f.color===ck).length;
+    const grpLabel=isMember()||isLeader()?`${flowers.length}/${totalInColor}`:flowers.length;
+    return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${grpLabel}</span></div>
     <div class="fg">${flowers.map(f=>{
       const dClans=getDisplayClans(f.id);
       const dMembers=getDisplayMembers(f.id);
       return `<div class="fc">
         <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
         <div class="fc-body">
-          <div class="fc-name">${esc(f.name)}</div>
+          <div class="fc-name" style="color:${cv.h}">${esc(f.name)}</div>
           <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
           ${dClans.length?`<div class="fc-clans">${dClans.map(n=>`<span class="clan-tag">🏅 ${esc(n)}</span>`).join('')}</div>`:''}
           ${dMembers.length?`<div class="fc-clans">${dMembers.map(m=>`<span class="clan-tag" style="background:#e0f2fe;color:#0369a1">👤 ${esc(m.displayName)}</span>`).join('')}</div>`:''}
