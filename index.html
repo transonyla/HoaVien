@@ -203,6 +203,17 @@ import {
   doc, query, where, onSnapshot, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
+// ─── FIREBASE CONFIG — nhúng sẵn, bạn bè mở link là dùng luôn ───────────────
+const FIREBASE_CONFIG = {
+  "apiKey": "AIzaSyD_iS-3bNySPRwF1x0XFqV6Vgr2R6_bI1c",
+  "authDomain": "hoavien-b5874.firebaseapp.com",
+  "projectId": "hoavien-b5874",
+  "storageBucket": "hoavien-b5874.firebasestorage.app",
+  "messagingSenderId": "269916169212",
+  "appId": "1:269916169212:web:3e6ebbd0d41299ffdfc879",
+  "measurementId": "G-6ZFGSCY3F5"
+};
+
 // ─── CONFIG KEY ───────────────────────────────────────────────────────────────
 const CK_FB    = 'hv4_fb_config';
 const CK_ADMIN = 'hv4_admin';
@@ -810,7 +821,8 @@ function renderErr(){
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function init(){
-  const cfg=loadSavedConfig();
+  // Ưu tiên config nhúng sẵn, fallback sang localStorage nếu có
+  const cfg = FIREBASE_CONFIG || loadSavedConfig();
   if(cfg){
     const ok=initFirebase(cfg);
     if(ok){ render(); await loadAll(); render(); return; }
