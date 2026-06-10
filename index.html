@@ -581,10 +581,11 @@ let GAS_URL = localStorage.getItem(CONFIG_KEY) || '';  // giữ tên để tươ
 //  STATE
 // ═══════════════════════════════════════════════════════════
 let state = {
-  flowers: [],   // [{id, name, color, imgUrl, sortOrder}]
-  members: [],   // [{id, displayName, alias, year}]
-  ticks: {},     // {memberId: [flowerId,...]}
+  flowers: [],
+  members: [],
+  ticks: {},
   loaded: false,
+  loadError: null,
   currentPage: 'dashboard',
   tickMemberId: '',
   tickSelected: new Set(),
@@ -677,32 +678,76 @@ async function sdbDelete(tab, searchCol, searchVal) {
 }
 
 // ── loadAll: đọc 3 tabs song song ───────────────────────────
+// fetch với timeout 10 giây
+function fetchWithTimeout(url, opts={}, ms=10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, {...opts, signal: controller.signal})
+    .finally(() => clearTimeout(timer));
+}
+
+async function sdbGetSafe(tab) {
+  try {
+    const r = await fetchWithTimeout(`${GAS_URL}/sheet/${tab}`);
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const text = await r.text();
+    const d = JSON.parse(text);
+    if(d && d.error) throw new Error(d.error);
+    return Array.isArray(d) ? d : [];
+  } catch(e) {
+    console.error('sdbGetSafe error ['+tab+']:', e.message);
+    return null; // null = lỗi, [] = thành công nhưng trống
+  }
+}
+
 async function loadAll() {
-  if(!GAS_URL) return;
+  if(!GAS_URL) { state.loaded = true; return; }
   try {
     const [flowers, members, tickRows] = await Promise.all([
-      sdbGet('Flowers'),
-      sdbGet('Members'),
-      sdbGet('Ticks'),
+      sdbGetSafe('Flowers'),
+      sdbGetSafe('Members'),
+      sdbGetSafe('Ticks'),
     ]);
-    if(!flowers || !members || !tickRows) return;
 
-    state.flowers = flowers.map(r => ({
-      id: r.id, name: r.name, color: r.color,
-      imgUrl: r.imgUrl||'', sortOrder: Number(r.sortOrder)||0,
-    })).sort((a,b) => a.sortOrder - b.sortOrder);
+    // Nếu cả 3 đều null → lỗi kết nối thật sự
+    if(flowers === null && members === null && tickRows === null) {
+      state.loadError = 'Không kết nối được SheetDB. Kiểm tra lại URL trong Cài đặt.';
+      state.loaded = true;
+      return;
+    }
 
-    state.members = members.map(r => ({
-      id: r.id, displayName: r.displayName, alias: r.alias||'', year: r.year||'',
-    }));
+    // Nếu trả về null từng tab riêng lẻ → có thể header chưa đúng
+    if(flowers === null || members === null || tickRows === null) {
+      state.loadError = 'Một số tab Sheets chưa có header. Vào Cài đặt → Khởi tạo Sheets.';
+      state.loaded = true;
+      return;
+    }
+
+    state.loadError = null;
+    state.flowers = flowers
+      .filter(r => r.id && r.name)
+      .map(r => ({
+        id: r.id, name: r.name, color: r.color || 'trang',
+        imgUrl: r.imgUrl||'', sortOrder: Number(r.sortOrder)||0,
+      })).sort((a,b) => a.sortOrder - b.sortOrder);
+
+    state.members = members
+      .filter(r => r.id && r.displayName)
+      .map(r => ({
+        id: r.id, displayName: r.displayName, alias: r.alias||'', year: r.year||'',
+      }));
 
     state.ticks = {};
-    tickRows.forEach(r => {
+    tickRows.filter(r => r.memberId).forEach(r => {
       state.ticks[r.memberId] = r.flowerIds ? r.flowerIds.split(',').filter(Boolean) : [];
     });
 
     state.loaded = true;
-  } catch(e) { console.error('loadAll error:', e); }
+  } catch(e) {
+    console.error('loadAll error:', e);
+    state.loadError = 'Lỗi: ' + e.message;
+    state.loaded = true;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -788,7 +833,7 @@ function renderApp() {
       </nav>
 
       <main class="main" id="page-content">
-        ${!state.loaded ? renderLoading() : renderPage(state.currentPage)}
+        ${!state.loaded ? renderLoading() : state.loadError ? renderLoadError() : renderPage(state.currentPage)}
       </main>
     </div>`;
 
@@ -804,6 +849,42 @@ function renderApp() {
 
 function renderLoading() {
   return `<div class="page-loading"><div class="spinner"></div> Đang tải dữ liệu...</div>`;
+}
+
+function renderLoadError() {
+  return '<div style="max-width:480px;margin:40px auto;padding:0 16px">' +
+    '<div class="card" style="border-color:#fca5a5">' +
+    '<div style="font-size:1.5rem;margin-bottom:10px">⚠️</div>' +
+    '<div style="font-weight:800;font-size:1rem;margin-bottom:8px;color:#b91c1c">Không tải được dữ liệu</div>' +
+    '<div style="font-size:.88rem;color:var(--text-600);margin-bottom:16px;line-height:1.6">' + state.loadError + '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+    '<button class="btn btn-primary" onclick="retryLoad()">🔄 Thử lại</button>' +
+    '<button class="btn btn-ghost" onclick="navigate('settings')">⚙️ Cài đặt</button>' +
+    '<button class="btn btn-ghost" onclick="showInitHelper()">🛠️ Khởi tạo Sheets</button>' +
+    '</div></div></div>';
+}
+
+async function retryLoad() {
+  state.loaded = false;
+  state.loadError = null;
+  renderApp();
+  await loadAll();
+  renderApp();
+}
+
+function showInitHelper() {
+  const body =
+    'Gõ header vào <b>hàng 1</b> của từng tab trong Google Sheets, mỗi từ vào <b>1 ô riêng</b>:<br><br>' +
+    '<b>Tab Flowers (5 ô):</b><br>' +
+    '<code style="background:#f1f5f1;padding:4px 8px;border-radius:4px;font-size:.82rem;display:block;margin:4px 0 10px">id | name | color | imgUrl | sortOrder</code>' +
+    '<b>Tab Members (4 ô):</b><br>' +
+    '<code style="background:#f1f5f1;padding:4px 8px;border-radius:4px;font-size:.82rem;display:block;margin:4px 0 10px">id | displayName | alias | year</code>' +
+    '<b>Tab Ticks (2 ô):</b><br>' +
+    '<code style="background:#f1f5f1;padding:4px 8px;border-radius:4px;font-size:.82rem;display:block;margin:4px 0">memberId | flowerIds</code>';
+  const footer =
+    '<button class="btn btn-primary" onclick="closeModal();retryLoad()">✅ Đã gõ xong, thử lại</button>' +
+    '<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>';
+  openModal('🛠️ Header cần gõ vào Sheets', body, footer);
 }
 
 function renderPage(page) {
