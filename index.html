@@ -962,45 +962,7 @@ window.doDelLeader=async function(id){
   await loadAll();render();
 };
 
-// ── CLOUDINARY UPLOAD + OPENROUTER VISION OCR ───────────────────────────────
-const CK_CLAUDE = 'hv5_openrouter_key';
-function loadClaudeKey(){ return localStorage.getItem(CK_CLAUDE)||''; }
-
-window.triggerImgUpload=function(){
-  document.getElementById('ef-img-file')?.click();
-};
-
-async function detectFlowerName(file){
-  const key=loadClaudeKey();
-  if(!key) throw new Error('Chưa cài OpenRouter API Key (vào ⚙️ Cài đặt → dán key vào)');
-  const base64=await new Promise((res,rej)=>{
-    const r=new FileReader();
-    r.onload=()=>res(r.result.split(',')[1]);
-    r.onerror=()=>rej(new Error('Đọc file thất bại'));
-    r.readAsDataURL(file);
-  });
-  const mediaType=file.type||'image/jpeg';
-  const resp=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer '+key,
-    },
-    body:JSON.stringify({
-      model:'meta-llama/llama-4-maverick:free',
-      max_tokens:64,
-      messages:[{role:'user',content:[
-        {type:'text',text:'Đây là ảnh từ game hoa. Hãy đọc chính xác tên hoa hiển thị trong ảnh (thường là dòng chữ lớn ở đầu hoặc giữa ảnh, trên nền banner/bảng tên). Chỉ trả về đúng tên hoa, không thêm gì khác. Nếu không thấy tên thì trả về: KHÔNG_ĐỌC_ĐƯỢC'},
-        {type:'image_url',image_url:{url:'data:'+mediaType+';base64,'+base64}}
-      ]}]
-    })
-  });
-  const data=await resp.json();
-  if(data.error) throw new Error('OpenRouter lỗi: '+(data.error.message||JSON.stringify(data.error))+' (model không hỗ trợ ảnh hoặc hết quota)');
-  const text=data.choices?.[0]?.message?.content?.trim()||'';
-  if(!text||text==='KHÔNG_ĐỌC_ĐƯỢC') return null;
-  return text;
-}
+// ── CLOUDINARY UPLOAD ────────────────────────────────────────────────────────
 
 window.onImgFileChange=async function(input){
   const file=input.files[0];
@@ -1010,35 +972,11 @@ window.onImgFileChange=async function(input){
   const preview=document.getElementById('ef-img-preview');
   const urlInput=document.getElementById('ef-img');
   const uploadBtn=document.getElementById('ef-upload-btn');
-  const nameInput=document.getElementById('ef-name');
-  const aiStatus=document.getElementById('ef-ai-status');
 
   // Hiện preview local ngay lập tức
   if(preview){preview.src=URL.createObjectURL(file);preview.style.display='block';}
   uploadBtn.disabled=true;
-  uploadBtn.innerHTML='<div class="sp"></div> Đang xử lý...';
-
-  // ── BƯỚC 1: Gemini nhận diện tên (chỉ khi ô tên trống) ───────────────────
-  if(nameInput && !nameInput.value.trim()){
-    if(aiStatus) aiStatus.textContent='🤖 Đang nhận diện...';
-    try {
-      const name=await detectFlowerName(file);
-      if(name){
-        nameInput.value=name;
-        nameInput.style.transition='border-color .3s';
-        nameInput.style.borderColor='var(--leaf)';
-        setTimeout(()=>{nameInput.style.borderColor='';},2000);
-        toast('🤖 Nhận diện: '+name);
-      } else {
-        toast('Không đọc được tên, hãy nhập tay','wn');
-      }
-    } catch(e){
-      toast('🔴 '+e.message,'er');
-    }
-    if(aiStatus) aiStatus.textContent='';
-  }
-
-  // ── BƯỚC 2: Upload Cloudinary ─────────────────────────────────────────────
+  // ── Upload Cloudinary ─────────────────────────────────────────────────────
   uploadBtn.innerHTML='<div class="sp"></div> Đang upload...';
   try {
     const fd=new FormData();
@@ -1087,7 +1025,7 @@ window.openAddFlower=function(){
   const sw=COLS.map(c=>`<div class="csw ${c.k==='trang'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('🌸 Thêm hoa mới',
     `<div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg-col"><label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:500;color:var(--leaf);font-size:.72rem"></span></label><input class="fi" id="ef-name" placeholder="Chọn ảnh để tự nhận diện tên 🤖"></div>
+      <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" placeholder="Nhập tên hoa..."></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col">
         <label class="fl">Ảnh</label>
@@ -1109,7 +1047,7 @@ window.openEditFlower=function(id){
   const sw=COLS.map(c=>`<div class="csw ${c.k===S._editColor?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('✏️ Sửa hoa',
     `<div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg-col"><label class="fl">Tên hoa * <span id="ef-ai-status" style="font-weight:500;color:var(--leaf);font-size:.72rem"></span></label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
+      <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${sw}</div></div>
       <div class="fg-col">
         <label class="fl">Ảnh</label>
@@ -1266,8 +1204,6 @@ window.doDelMember=async function(id){
 function pageSettings(){
   if(!isAdmin()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ Admin mới truy cập được</div>`;
   const hasConfig=!!loadSavedConfig();
-  const claudeKey=loadClaudeKey();
-  const keyMasked=claudeKey?claudeKey.slice(0,12)+'••••••••••••':'';
   return `<div class="card" style="margin-bottom:14px">
     <div class="card-title">🔥 Firebase Config</div>
     ${hasConfig
@@ -1277,21 +1213,6 @@ function pageSettings(){
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
       <button class="btn btn-g" onclick="saveFirebaseConfig()">💾 Lưu & Kết nối</button>
       ${hasConfig?`<button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>`:''}
-    </div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <div class="card-title">🤖 OpenRouter API Key
-      <span style="font-size:.72rem;font-weight:500;margin-left:4px;color:${claudeKey?'var(--leaf)':'#ef9a9a'}">${claudeKey?'● Đã cài':'● Chưa cài — nhận diện hoa sẽ không hoạt động'}</span>
-    </div>
-    <p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Dùng để nhận diện tên hoa từ ảnh. Key lưu trên máy này, không gửi lên Firebase. <a href="https://openrouter.ai/settings/keys" target="_blank" style="color:var(--leaf)">Lấy key miễn phí tại openrouter.ai →</a></p>
-    ${claudeKey?`<div style="font-size:.78rem;color:var(--mist);background:var(--sage);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-family:monospace">${keyMasked}</div>`:''}
-    <div style="display:flex;gap:8px;align-items:center">
-      <input class="fi" id="claude-key-input" type="password" placeholder="sk-or-v1-..." style="flex:1;font-family:monospace;font-size:.82rem">
-      <button class="btn btn-o btn-sm" type="button" onclick="toggleClaudeKeyVis()">👁️</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-      <button class="btn btn-g btn-sm" onclick="doSaveClaudeKey()">💾 Lưu Key</button>
-      ${claudeKey?`<button class="btn btn-r btn-sm" onclick="doDeleteClaudeKey()">🗑️ Xóa Key</button>`:''}
     </div>
   </div>
   <div class="card" style="margin-bottom:14px">
@@ -1309,24 +1230,6 @@ window.saveFirebaseConfig=async function(){
   if(!ok){toast('Firebase thất bại','er');return;}
   toast('Đã kết nối 🔥');
   await loadAll();render();
-};
-window.doSaveClaudeKey=function(){
-  const k=document.getElementById('claude-key-input')?.value.trim();
-  if(!k){toast('Nhập OpenRouter API Key!','wn');return;}
-  if(!k.startsWith('sk-or-v1-')){toast('Key phải bắt đầu bằng sk-or-v1-...','wn');return;}
-  localStorage.setItem(CK_CLAUDE,k);
-  toast('Đã lưu OpenRouter API Key 🤖');
-  render();
-};
-window.doDeleteClaudeKey=function(){
-  localStorage.removeItem(CK_CLAUDE);
-  toast('Đã xóa OpenRouter API Key','wn');
-  render();
-};
-window.toggleClaudeKeyVis=function(){
-  const inp=document.getElementById('claude-key-input');
-  if(!inp) return;
-  inp.type=inp.type==='password'?'text':'password';
 };
 window.retry=async function(){setPulse('loading');await loadAll();render();};
 window.confirmReset=function(){
