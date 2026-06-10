@@ -17,31 +17,27 @@
 body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;-webkit-tap-highlight-color:transparent}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--haze);border-radius:4px}
 
-/* topbar */
 .bar{background:var(--forest);height:56px;display:flex;align-items:center;padding:0 16px;gap:10px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .bar-logo{font-size:1.05rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;letter-spacing:-.01em}
 .bar-sp{flex:1}
 .bar-sync{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#a5d6a7}
 .pulse{width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0;transition:background .3s}
-.pulse.loading{background:#ffd54f;animation:blink 1s infinite}
+.pulse.loading{background:#90caf9;animation:blink 1s infinite}
 .pulse.err{background:#ef5350}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
 .wrap{max-width:900px;margin:0 auto;padding:20px 14px 90px}
 
-/* nav */
 .nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px}
 .nvb{padding:8px 15px;border-radius:var(--rp);font-size:.8rem;font-weight:700;border:1.5px solid var(--bd);background:var(--white);color:var(--mist);cursor:pointer;transition:all .14s;white-space:nowrap;font-family:inherit}
 .nvb:hover{color:var(--forest);border-color:var(--leaf)}
 .nvb.on{background:var(--forest);color:#fff;border-color:var(--forest)}
 .nvb.pk{background:var(--petal);color:#fff;border-color:var(--petal)}
 
-/* card */
 .card{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--sh);padding:18px}
 .card+.card{margin-top:14px}
 .card-title{font-size:.88rem;font-weight:800;color:var(--forest2);margin-bottom:14px;display:flex;align-items:center;gap:7px}
 
-/* flower grid */
 .fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
 .fc{background:var(--white);border-radius:var(--r);border:1.5px solid var(--bd);overflow:hidden;transition:transform .14s,box-shadow .14s;position:relative}
 .fc:hover{transform:translateY(-2px);box-shadow:var(--shd)}
@@ -55,19 +51,16 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(-
 .fc-dot{width:6px;height:6px;border-radius:50%}
 .fc-owns{font-size:.69rem;color:var(--mist);margin-top:4px;line-height:1.5}
 
-/* tick mode */
 .tc{cursor:pointer;user-select:none}
 .tc.ticked{border-color:var(--petal);box-shadow:0 0 0 2px var(--blush)}
 .chk{position:absolute;top:7px;right:7px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.75);border:2px solid rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:13px;backdrop-filter:blur(3px);transition:all .13s}
 .tc.ticked .chk{background:var(--petal);border-color:var(--petal);color:#fff}
 
-/* group */
 .grp{margin:26px 0 13px;display:flex;align-items:center;gap:9px}
 .grp-bar{width:4px;height:20px;border-radius:3px;background:var(--petal);flex-shrink:0}
 .grp h2{font-size:.98rem;font-weight:800}
 .grp-cnt{font-size:.7rem;color:var(--mist);background:var(--sage);border:1px solid var(--bd);padding:2px 8px;border-radius:var(--rp);font-weight:600}
 
-/* form */
 .fg-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
 .fg-col{display:flex;flex-direction:column;gap:5px}
 .fl{font-size:.76rem;font-weight:700;color:var(--forest2)}
@@ -76,18 +69,15 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(-
 .fi::placeholder{color:var(--haze)}
 select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8f71' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 
-/* search */
 .sbar{position:relative;margin-bottom:16px}
 .sbar input{padding-left:38px}
 .sico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--haze);pointer-events:none;font-size:14px}
 
-/* color filter */
 .cfbar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:18px}
 .ctab{padding:4px 12px;border-radius:var(--rp);font-size:.74rem;font-weight:700;border:1.5px solid var(--bd);background:var(--white);color:var(--mist);cursor:pointer;transition:all .12s}
 .ctab:hover{border-color:var(--mist)}
 .ctab.on{border-width:2px;color:var(--ink)}
 
-/* buttons */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:9px 17px;border-radius:9px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:all .13s}
 .btn-g{background:var(--forest2);color:#fff}.btn-g:hover{background:var(--leaf)}
 .btn-p{background:var(--petal);color:#fff}.btn-p:hover{background:#c2185b}
@@ -99,7 +89,6 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 .irow{display:flex;gap:8px;align-items:flex-end}
 .irow .fi{flex:1}
 
-/* member table */
 .mtbl{width:100%;border-collapse:collapse}
 .mtbl th{text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mist);padding:9px 12px;border-bottom:2px solid var(--bd)}
 .mtbl td{padding:12px 12px;border-bottom:1px solid var(--sage);font-size:.86rem;vertical-align:middle}
@@ -113,17 +102,14 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 .ibtn:hover{background:var(--sage)}
 .ibtn.del:hover{background:#ffebee;color:#d32f2f}
 
-/* stats */
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:20px}
 .sc{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);padding:13px 14px}
 .sv{font-size:1.55rem;font-weight:800;line-height:1}
 .sl{font-size:.67rem;font-weight:700;color:var(--mist);margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
 
-/* save bar */
 .savebar{position:fixed;bottom:0;left:0;right:0;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;z-index:150;box-shadow:0 -4px 20px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .22s}
 .savebar.on{transform:none}
 
-/* member picker */
 .mpicker{background:var(--white);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--shd);padding:18px;margin-bottom:20px}
 .mpicker-title{font-size:.88rem;font-weight:800;color:var(--forest2);margin-bottom:13px}
 .mlist{display:flex;flex-wrap:wrap;gap:7px}
@@ -131,16 +117,14 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 .mchip:hover{border-color:var(--leaf);color:var(--forest)}
 .mchip.on{background:var(--petal);color:#fff;border-color:var(--petal)}
 
-/* toast */
 .toasts{position:fixed;top:64px;right:12px;z-index:999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
 .toast{background:var(--forest);color:#fff;padding:10px 15px;border-radius:9px;font-size:.81rem;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.2);animation:tin .22s ease,tout .28s ease 2.2s forwards;pointer-events:auto;max-width:280px}
 .toast.ok{border-left:3px solid #4caf50}
 .toast.er{border-left:3px solid #ef5350}
-.toast.wn{border-left:3px solid #ffc107}
+.toast.wn{border-left:3px solid #90caf9}
 @keyframes tin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 @keyframes tout{from{opacity:1}to{opacity:0;transform:translateX(16px)}}
 
-/* modal */
 .mbg{position:fixed;inset:0;background:rgba(13,31,18,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:opacity .17s}
 .mbg.on{opacity:1;pointer-events:auto}
 .mbox{background:var(--white);border-radius:var(--r);padding:24px;max-width:430px;width:100%;box-shadow:var(--shd);transform:scale(.94);transition:transform .17s;max-height:88vh;overflow-y:auto}
@@ -149,32 +133,36 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
 .mbdy{font-size:.86rem;color:var(--forest2);margin-bottom:18px;line-height:1.7}
 .mft{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 
-/* spinner */
 .sp{display:inline-block;width:15px;height:15px;border:2px solid var(--haze);border-top-color:var(--leaf);border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading{display:flex;align-items:center;justify-content:center;padding:60px;gap:10px;color:var(--mist);font-size:.87rem}
 
-/* empty */
 .empty{text-align:center;padding:48px 16px;color:var(--haze)}
 .empty-icon{font-size:2.6rem;margin-bottom:10px}
 
 /* setup */
-.setup{max-width:500px;margin:36px auto;background:var(--white);border-radius:var(--r);border:1px solid var(--bd);padding:30px;box-shadow:var(--sh)}
+.setup{max-width:540px;margin:36px auto;background:var(--white);border-radius:var(--r);border:1px solid var(--bd);padding:30px;box-shadow:var(--sh)}
 .setup h2{font-size:1.2rem;font-weight:800;margin-bottom:9px;color:var(--forest)}
 .setup p{font-size:.84rem;color:var(--mist);line-height:1.75;margin-bottom:14px}
 .setup ol{padding-left:18px;font-size:.84rem;color:var(--forest2);line-height:2.2}
-code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;color:var(--forest2)}
+.setup-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.setup-step{display:flex;align-items:flex-start;gap:12px;background:var(--sage);border-radius:10px;padding:12px 14px}
+.setup-num{width:24px;height:24px;border-radius:50%;background:var(--forest);color:#fff;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.setup-text{font-size:.83rem;color:var(--forest2);line-height:1.6}
+code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;color:var(--forest2);font-family:monospace}
+.cfg-area{background:var(--sage);border-radius:10px;padding:14px;font-size:.78rem;font-family:monospace;color:var(--forest2);line-height:1.8;margin:10px 0;border:1px dashed var(--bd);white-space:pre-wrap;word-break:break-all}
 
-/* errbox */
 .errbox{max-width:470px;margin:36px auto;background:var(--white);border-radius:var(--r);border:1.5px solid #ffcdd2;padding:24px;box-shadow:var(--sh)}
 .errbox h3{font-size:1rem;font-weight:800;color:#c62828;margin-bottom:8px}
 .errbox p{font-size:.85rem;color:var(--forest2);margin-bottom:16px;line-height:1.65}
 
-/* color swatches */
 .cpick{display:flex;gap:5px;flex-wrap:wrap}
 .csw{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .12s,border-color .12s;flex-shrink:0}
 .csw:hover{transform:scale(1.18)}
 .csw.on{border-color:var(--ink)!important;transform:scale(1.15)}
+
+/* Firebase config textarea */
+.fb-textarea{font-family:monospace;font-size:.78rem;min-height:130px;resize:vertical;white-space:pre}
 
 @media(max-width:480px){
   .fg{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
@@ -206,29 +194,35 @@ code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;co
 
 <div class="wrap" id="app"></div>
 
-<script>
-// ─── CONFIG ────────────────────────────────────────────────────────────────
-const CK_URL   = 'hv3_url';
-const CK_ADMIN = 'hv3_admin';
-const ADMIN_PW = 'hoavien2024'; // đổi mật khẩu admin ở đây
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getFirestore, collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
+  doc, query, where, onSnapshot, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-let API_URL = localStorage.getItem(CK_URL) || '';
+// ─── CONFIG KEY ───────────────────────────────────────────────────────────────
+const CK_FB    = 'hv4_fb_config';
+const CK_ADMIN = 'hv4_admin';
+const ADMIN_PW = 'hoavien2024'; // ← đổi mật khẩu admin ở đây
 
-// ─── COLORS ────────────────────────────────────────────────────────────────
+// ─── COLORS (bỏ vàng và cam) ─────────────────────────────────────────────────
 const COLS = [
   {k:'hong', l:'Hồng',  h:'#ec4899'},
   {k:'do',   l:'Đỏ',    h:'#ef4444'},
-  {k:'cam',  l:'Cam',   h:'#f97316'},
-  {k:'vang', l:'Vàng',  h:'#eab308'},
-  {k:'xanh', l:'Xanh',  h:'#22c55e'},
-  {k:'lam',  l:'Lam',   h:'#3b82f6'},
+  {k:'xanh', l:'Xanh lá', h:'#22c55e'},
+  {k:'lam',  l:'Xanh lam', h:'#3b82f6'},
   {k:'tim',  l:'Tím',   h:'#8b5cf6'},
-  {k:'trang',l:'Trắng', h:'#94a3b8'},
+  {k:'trang',l:'Trắng/Xám', h:'#94a3b8'},
 ];
 const CM = Object.fromEntries(COLS.map(c=>[c.k,c]));
 const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
 
-// ─── STATE ─────────────────────────────────────────────────────────────────
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let db = null;
+let unsubscribes = [];
+
 let S = {
   flowers:[], members:[], ticks:{},
   loaded:false, err:null,
@@ -237,7 +231,25 @@ let S = {
   admin: !!localStorage.getItem(CK_ADMIN),
 };
 
-// ─── PULSE ─────────────────────────────────────────────────────────────────
+// ─── FIREBASE INIT ────────────────────────────────────────────────────────────
+function initFirebase(config){
+  try {
+    const app = initializeApp(config, 'hoavien-' + Date.now());
+    db = getFirestore(app);
+    return true;
+  } catch(e) {
+    console.error(e);
+    return false;
+  }
+}
+
+function loadSavedConfig(){
+  const raw = localStorage.getItem(CK_FB);
+  if(!raw) return null;
+  try { return JSON.parse(raw); } catch(e){ return null; }
+}
+
+// ─── PULSE ───────────────────────────────────────────────────────────────────
 const setPulse = s => {
   const d=document.getElementById('pulse');
   if(!d) return;
@@ -246,86 +258,16 @@ const setPulse = s => {
     s==='loading'?'Đang tải':s==='err'?'Lỗi':'Kết nối';
 };
 
-// ─── FETCH ─────────────────────────────────────────────────────────────────
-function ftch(url, opts={}, ms=14000){
-  const c=new AbortController();
-  const t=setTimeout(()=>c.abort(),ms);
-  return fetch(url,{...opts,signal:c.signal}).finally(()=>clearTimeout(t));
-}
-
-// ─── SHEETDB API ───────────────────────────────────────────────────────────
-// SheetDB dùng ?sheet=TabName để chỉ định tab
-const base  = tab => `${API_URL}?sheet=${encodeURIComponent(tab)}`;
-const baseQ = (tab,col,val) => `${API_URL}/${encodeURIComponent(col)}/${encodeURIComponent(val)}?sheet=${encodeURIComponent(tab)}`;
-
-async function sGet(tab){
-  try{
-    const r=await ftch(base(tab));
-    if(!r.ok) return null;
-    const d=await r.json();
-    return Array.isArray(d)?d:null;
-  }catch(e){return null;}
-}
-
-async function sPost(tab,data){
-  try{
-    const r=await ftch(base(tab),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data})});
-    return await r.json();
-  }catch(e){return{error:e.message};}
-}
-
-async function sPatch(tab,col,val,data){
-  try{
-    const r=await ftch(baseQ(tab,col,val),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({data})});
-    return await r.json();
-  }catch(e){return{error:e.message};}
-}
-
-async function sDel(tab,col,val){
-  try{
-    const r=await ftch(baseQ(tab,col,val),{method:'DELETE'});
-    return await r.json();
-  }catch(e){return{error:e.message};}
-}
-
-// ─── AUTO SETUP HEADERS ────────────────────────────────────────────────────
-// SheetDB tự tạo header khi POST lần đầu — không cần làm gì thêm.
-// Tuy nhiên ta kiểm tra xem sheet có trả về mảng hợp lệ không.
-
-// ─── LOAD ALL ──────────────────────────────────────────────────────────────
-async function loadAll(){
-  if(!API_URL){S.loaded=true;return;}
-  S.loaded=false; S.err=null; setPulse('loading');
-  const [fl,mb,tk]=await Promise.all([sGet('Flowers'),sGet('Members'),sGet('Ticks')]);
-  setPulse('');
-  if(fl===null||mb===null||tk===null){
-    S.err='Không kết nối được SheetDB. Kiểm tra API URL và quyền truy cập.';
-    S.loaded=true; setPulse('err'); return;
-  }
-  S.flowers=fl.filter(r=>r.id&&r.name).map(r=>({
-    id:r.id,name:r.name,color:r.color||'trang',
-    imgUrl:r.imgUrl||'',sortOrder:Number(r.sortOrder)||0,
-  })).sort((a,b)=>a.sortOrder-b.sortOrder);
-  S.members=mb.filter(r=>r.id&&r.displayName).map(r=>({
-    id:r.id,displayName:r.displayName,alias:r.alias||'',year:r.year||'',
-  }));
-  S.ticks={};
-  tk.filter(r=>r.memberId).forEach(r=>{
-    S.ticks[r.memberId]=r.flowerIds?r.flowerIds.split(',').filter(Boolean):[];
-  });
-  S.loaded=true;
-}
-
-// ─── TOAST ─────────────────────────────────────────────────────────────────
+// ─── TOAST ───────────────────────────────────────────────────────────────────
 function toast(msg,type='ok'){
   const el=document.createElement('div');
   el.className='toast '+type;
-  el.textContent=(type==='ok'?'✅ ':type==='er'?'❌ ':'⚠️ ')+msg;
+  el.textContent=(type==='ok'?'✅ ':type==='er'?'❌ ':'ℹ️ ')+msg;
   document.getElementById('toasts').appendChild(el);
   setTimeout(()=>el.remove(),2700);
 }
 
-// ─── MODAL ─────────────────────────────────────────────────────────────────
+// ─── MODAL ───────────────────────────────────────────────────────────────────
 function openModal(t,b,f){
   document.getElementById('mttl').innerHTML=t;
   document.getElementById('mbdy').innerHTML=b;
@@ -333,25 +275,71 @@ function openModal(t,b,f){
   document.getElementById('modal').classList.add('on');
 }
 function closeModal(){document.getElementById('modal').classList.remove('on');}
+window.closeModal=closeModal;
 
-// ─── UTILS ─────────────────────────────────────────────────────────────────
+// ─── UTILS ───────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function uid(){return 'm'+Date.now()+Math.floor(Math.random()*1000);}
 
-// ─── RENDER ────────────────────────────────────────────────────────────────
+// ─── FIRESTORE CRUD ──────────────────────────────────────────────────────────
+async function fsGetAll(col_name){
+  const snap = await getDocs(collection(db, col_name));
+  return snap.docs.map(d=>({_id:d.id,...d.data()}));
+}
+
+async function fsAdd(col_name, data){
+  const ref = await addDoc(collection(db, col_name), data);
+  return ref.id;
+}
+
+async function fsSet(col_name, docId, data){
+  await setDoc(doc(db, col_name, docId), data, {merge:true});
+}
+
+async function fsDel(col_name, docId){
+  await deleteDoc(doc(db, col_name, docId));
+}
+
+// ─── LOAD ALL ────────────────────────────────────────────────────────────────
+async function loadAll(){
+  if(!db){S.loaded=true;return;}
+  S.loaded=false; S.err=null; setPulse('loading');
+  try {
+    const [fl,mb,tk] = await Promise.all([
+      fsGetAll('flowers'),
+      fsGetAll('members'),
+      fsGetAll('ticks'),
+    ]);
+    S.flowers = fl.filter(r=>r.name).map(r=>({
+      id:r._id, name:r.name, color:r.color||'trang',
+      imgUrl:r.imgUrl||'', sortOrder:Number(r.sortOrder)||0,
+    })).sort((a,b)=>a.sortOrder-b.sortOrder);
+    S.members = mb.filter(r=>r.displayName).map(r=>({
+      id:r._id, displayName:r.displayName, alias:r.alias||'', year:r.year||'',
+    }));
+    S.ticks = {};
+    tk.forEach(r=>{
+      // doc id = memberId, field flowerIds = array
+      S.ticks[r._id] = Array.isArray(r.flowerIds) ? r.flowerIds : [];
+    });
+    S.loaded=true; setPulse('');
+  } catch(e){
+    S.err = 'Không tải được dữ liệu: '+e.message;
+    S.loaded=true; setPulse('err');
+  }
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
 function render(){
   const app=document.getElementById('app');
   if(!app) return;
-
-  // save bar
   const sb=document.getElementById('savebar');
   if(S.page==='tick'&&S.mid){sb.classList.add('on');document.getElementById('sbc').textContent=S.msel.size;}
   else sb.classList.remove('on');
 
-  if(!API_URL){app.innerHTML=renderSetup();return;}
+  if(!db){app.innerHTML=renderSetup();return;}
   if(!S.loaded){app.innerHTML='<div class="loading"><div class="sp"></div> Đang tải...</div>';return;}
   if(S.err){app.innerHTML=renderErr();return;}
-
   app.innerHTML=renderNav()+renderPage();
 }
 
@@ -366,7 +354,7 @@ function renderNav(){
   return `<div class="nav">${tabs.map(t=>`<button class="nvb ${S.page===t.k?'on':''}" onclick="goto('${t.k}')">${t.l}</button>`).join('')}</div>`;
 }
 
-function goto(p){S.page=p;render();}
+window.goto=function(p){S.page=p;render();}
 
 function renderPage(){
   if(S.page==='flowers') return pageFlowers();
@@ -377,22 +365,19 @@ function renderPage(){
   return '';
 }
 
-// ─── FLOWERS PAGE ──────────────────────────────────────────────────────────
+// ─── FLOWERS PAGE ────────────────────────────────────────────────────────────
 function pageFlowers(){
   const q=S.fq.trim().toLowerCase();
   let list=S.flowers;
   if(S.fcolor!=='all') list=list.filter(f=>f.color===S.fcolor);
   if(q) list=list.filter(f=>f.name.toLowerCase().includes(q));
 
-  // group by color
   const groups={};
   list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
 
-  // owner map
   const owners={};
   S.flowers.forEach(f=>{
-    const own=S.members.filter(m=>(S.ticks[m.id]||[]).includes(f.id)).map(m=>m.displayName);
-    owners[f.id]=own;
+    owners[f.id]=S.members.filter(m=>(S.ticks[m.id]||[]).includes(f.id)).map(m=>m.displayName);
   });
 
   const colorFilter=`<div class="cfbar">
@@ -427,7 +412,7 @@ function pageFlowers(){
   return colorFilter+searchBar+html;
 }
 
-// ─── TICK PAGE ─────────────────────────────────────────────────────────────
+// ─── TICK PAGE ───────────────────────────────────────────────────────────────
 function pageTick(){
   const picker=`<div class="mpicker">
     <div class="mpicker-title">👤 Chọn tên của bạn</div>
@@ -475,18 +460,16 @@ function pageTick(){
   return picker+info+colorFilter+searchBar+(list.length?html:`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`);
 }
 
-function pickMember(id){
+window.pickMember=function(id){
   S.mid=id;
-  // load existing ticks for this member
   S.msel=new Set(S.ticks[id]||[]);
   render();
 }
 
-function toggleTick(id){
+window.toggleTick=function(id){
   if(!S.mid){toast('Chọn tên trước!','wn');return;}
   S.msel.has(id)?S.msel.delete(id):S.msel.add(id);
-  // update card inline without full re-render
-  const cards=document.querySelectorAll(`.tc`);
+  const cards=document.querySelectorAll('.tc');
   cards.forEach(card=>{
     const fn=card.getAttribute('onclick');
     if(fn&&fn.includes(`'${id}'`)){
@@ -499,35 +482,31 @@ function toggleTick(id){
   document.getElementById('sbc').textContent=S.msel.size;
 }
 
-async function saveTicks(){
+window.saveTicks=async function(){
   if(!S.mid){toast('Chọn thành viên trước!','wn');return;}
   const btn=document.getElementById('sbtn');
   btn.disabled=true;btn.innerHTML='<div class="sp"></div>';
-  const fids=[...S.msel].join(',');
-  const exists=S.ticks.hasOwnProperty(S.mid);
   setPulse('loading');
-  const r=exists
-    ?await sPatch('Ticks','memberId',S.mid,{flowerIds:fids})
-    :await sPost('Ticks',{memberId:S.mid,flowerIds:fids});
-  setPulse('');
-  if(r&&!r.error){
+  try {
+    await fsSet('ticks', S.mid, {flowerIds:[...S.msel], updatedAt: new Date().toISOString()});
     S.ticks[S.mid]=[...S.msel];
     toast('Đã lưu 🌸');
-  } else toast((r&&r.error)||'Lỗi kết nối','er');
+  } catch(e){
+    toast('Lỗi lưu dữ liệu: '+e.message,'er');
+  }
+  setPulse('');
   btn.disabled=false;btn.innerHTML='💾 Lưu';
 }
 
-// ─── MEMBERS PAGE ──────────────────────────────────────────────────────────
+// ─── MEMBERS PAGE ────────────────────────────────────────────────────────────
 function pageMembers(){
   const sorted=[...S.members].sort((a,b)=>(S.ticks[b.id]||[]).length-(S.ticks[a.id]||[]).length);
   const total=S.flowers.length;
-
   const statsHtml=`<div class="stats">
     <div class="sc"><div class="sv">${S.members.length}</div><div class="sl">Thành viên</div></div>
     <div class="sc"><div class="sv">${total}</div><div class="sl">Loài hoa</div></div>
     <div class="sc"><div class="sv">${total?Math.round(Object.values(S.ticks).reduce((a,v)=>a+v.length,0)/Math.max(S.members.length,1)):0}</div><div class="sl">TB / người</div></div>
   </div>`;
-
   const tableHtml=sorted.length===0
     ?`<div class="empty"><div class="empty-icon">👥</div>Chưa có thành viên</div>`
     :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th><th>Sở hữu</th></tr></thead><tbody>
@@ -540,24 +519,21 @@ function pageMembers(){
         <td><div class="mbar-w"><div class="mbar"><div class="mbar-f" style="width:${pct}%"></div></div><span class="mlbl">${n}/${total}</span></div></td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
-
   return statsHtml+`<div class="card">${tableHtml}</div>`;
 }
 
-// ─── MANAGE PAGE (ADMIN) ───────────────────────────────────────────────────
+// ─── MANAGE PAGE (ADMIN ONLY) ────────────────────────────────────────────────
 function pageManage(){
-  if(!S.admin) return `<div class="empty"><div class="empty-icon">🔒</div>Cần đăng nhập admin</div>`;
+  if(!S.admin) return `<div class="empty"><div class="empty-icon">🔒</div>Cần đăng nhập admin để quản lý</div>`;
   return manageFlowers()+manageMembers();
 }
 
 function manageFlowers(){
-  const colorSwatches=COLS.map(c=>`<div class="csw" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
-
   const rows=S.flowers.map(f=>{
     const cv=col(f.color);
-    const own=(S.ticks?Object.values(S.ticks).filter(ids=>ids.includes(f.id)).length:0);
+    const own=Object.values(S.ticks).filter(ids=>ids.includes(f.id)).length;
     return `<tr>
-      <td><span class="fc-dot" style="background:${cv.h};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px"></span><strong>${esc(f.name)}</strong></td>
+      <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cv.h};margin-right:5px"></span><strong>${esc(f.name)}</strong></td>
       <td style="font-size:.78rem;color:var(--mist)">${cv.l}</td>
       <td style="font-size:.78rem;color:var(--mist)">${own} người</td>
       <td>
@@ -566,7 +542,6 @@ function manageFlowers(){
       </td>
     </tr>`;
   }).join('');
-
   return `<div class="card" style="margin-bottom:14px">
     <div class="card-title">🌸 Quản lý hoa <span style="font-size:.76rem;font-weight:600;color:var(--mist)">(${S.flowers.length})</span>
       <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddFlower()">+ Thêm hoa</button>
@@ -581,11 +556,8 @@ function manageMembers(){
     <td><strong>${esc(m.displayName)}</strong>${m.alias?`<span style="font-size:.74rem;color:var(--mist);margin-left:6px">${esc(m.alias)}</span>`:''}</td>
     <td style="font-size:.78rem;color:var(--mist)">${m.year||'—'}</td>
     <td style="font-size:.78rem;color:var(--mist)">${(S.ticks[m.id]||[]).length} hoa</td>
-    <td>
-      <button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button>
-    </td>
+    <td><button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button></td>
   </tr>`).join('');
-
   return `<div class="card">
     <div class="card-title">👥 Quản lý thành viên
       <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddMember()">+ Thêm</button>
@@ -595,8 +567,8 @@ function manageMembers(){
   </div>`;
 }
 
-// ADD / EDIT FLOWER MODAL
-function openAddFlower(){
+// ADD / EDIT FLOWER
+window.openAddFlower=function(){
   S._editFlowerId=null; S._editColor='hong';
   const swatches=COLS.map(c=>`<div class="csw ${c.k==='hong'?'on':''}" style="background:${c.h}" title="${c.l}" onclick="pickColor('${c.k}')" id="sw-${c.k}"></div>`).join('');
   openModal('🌸 Thêm hoa mới',
@@ -604,13 +576,13 @@ function openAddFlower(){
       <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" placeholder="Hoa hồng nhung"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${swatches}</div></div>
       <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" placeholder="https://..."></div>
-      <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" placeholder="0" value="0"></div>
+      <div class="fg-col"><label class="fl">Thứ tự sắp xếp</label><input class="fi" id="ef-sort" type="number" placeholder="0" value="0"></div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
   );
 }
 
-function openEditFlower(id){
+window.openEditFlower=function(id){
   const f=S.flowers.find(x=>x.id===id);
   if(!f) return;
   S._editFlowerId=id; S._editColor=f.color||'hong';
@@ -620,74 +592,73 @@ function openEditFlower(id){
       <div class="fg-col"><label class="fl">Tên hoa *</label><input class="fi" id="ef-name" value="${esc(f.name)}"></div>
       <div class="fg-col"><label class="fl">Màu</label><div class="cpick">${swatches}</div></div>
       <div class="fg-col"><label class="fl">URL ảnh</label><input class="fi" id="ef-img" value="${esc(f.imgUrl)}"></div>
-      <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="${f.sortOrder}"></div>
+      <div class="fg-col"><label class="fl">Thứ tự sắp xếp</label><input class="fi" id="ef-sort" type="number" value="${f.sortOrder}"></div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
   );
 }
 
-function pickColor(k){
+window.pickColor=function(k){
   S._editColor=k;
   document.querySelectorAll('.csw').forEach(el=>el.classList.remove('on'));
   const sw=document.getElementById('sw-'+k);
   if(sw) sw.classList.add('on');
 }
 
-async function doSaveFlower(){
+window.doSaveFlower=async function(){
   const name=document.getElementById('ef-name')?.value.trim();
   if(!name){toast('Nhập tên hoa!','wn');return;}
   const imgUrl=document.getElementById('ef-img')?.value.trim()||'';
   const sortOrder=Number(document.getElementById('ef-sort')?.value)||0;
   const color=S._editColor||'hong';
-
   const mbox=document.querySelector('.mbox');
   const savebtn=mbox?.querySelectorAll('.btn')[1];
   if(savebtn){savebtn.disabled=true;savebtn.innerHTML='<div class="sp"></div>';}
   setPulse('loading');
-
-  let r;
-  if(S._editFlowerId){
-    r=await sPatch('Flowers','id',S._editFlowerId,{name,color,imgUrl,sortOrder});
-  } else {
-    const id='f'+Date.now();
-    r=await sPost('Flowers',{id,name,color,imgUrl,sortOrder});
-  }
-  setPulse('');
-  if(r&&!r.error){
+  try {
+    if(S._editFlowerId){
+      await fsSet('flowers', S._editFlowerId, {name,color,imgUrl,sortOrder});
+      toast('Đã cập nhật hoa');
+    } else {
+      const newId='f'+Date.now();
+      await fsSet('flowers', newId, {name,color,imgUrl,sortOrder});
+      toast('Đã thêm hoa mới 🌸');
+    }
     closeModal();
-    toast(S._editFlowerId?'Đã cập nhật hoa':'Đã thêm hoa mới');
     await loadAll(); render();
-  } else {
-    toast((r&&r.error)||'Lỗi lưu dữ liệu','er');
+  } catch(e){
+    toast('Lỗi: '+e.message,'er');
     if(savebtn){savebtn.disabled=false;savebtn.innerHTML='💾 Lưu';}
   }
+  setPulse('');
 }
 
-function confirmDelFlower(id){
+window.confirmDelFlower=function(id){
   const f=S.flowers.find(x=>x.id===id);
-  openModal('⚠️ Xóa hoa',`Xóa <b>${esc(f?.name||id)}</b>? Dữ liệu tick liên quan sẽ không bị xóa.`,
+  openModal('⚠️ Xóa hoa',`Xóa <b>${esc(f?.name||id)}</b>? Các tick liên quan sẽ không bị xóa.`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelFlower('${id}')">Xóa</button>`);
 }
-async function doDelFlower(id){
+window.doDelFlower=async function(id){
   closeModal(); setPulse('loading');
-  await sDel('Flowers','id',id);
+  try { await fsDel('flowers', id); toast('Đã xóa hoa'); }
+  catch(e){ toast('Lỗi: '+e.message,'er'); }
   setPulse('');
-  toast('Đã xóa hoa'); await loadAll(); render();
+  await loadAll(); render();
 }
 
-// ADD MEMBER MODAL
-function openAddMember(){
+// ADD MEMBER
+window.openAddMember=function(){
   openModal('👤 Thêm thành viên',
     `<div style="display:flex;flex-direction:column;gap:12px">
       <div class="fg-col"><label class="fl">Tên hiển thị *</label><input class="fi" id="am-d" placeholder="Khánh Ly"></div>
-      <div class="fg-col"><label class="fl">Tên game (bí danh)</label><input class="fi" id="am-a" placeholder="Mẫn"></div>
+      <div class="fg-col"><label class="fl">Tên game / bí danh</label><input class="fi" id="am-a" placeholder="Mẫn"></div>
       <div class="fg-col"><label class="fl">Năm sinh</label><input class="fi" id="am-y" placeholder="1991" maxlength="4" type="number"></div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doAddMember()">Thêm</button>`
   );
 }
 
-async function doAddMember(){
+window.doAddMember=async function(){
   const d=document.getElementById('am-d')?.value.trim();
   const a=document.getElementById('am-a')?.value.trim()||'';
   const y=document.getElementById('am-y')?.value.trim()||'';
@@ -696,27 +667,35 @@ async function doAddMember(){
   const savebtn=document.querySelector('.mbox .btn-g');
   if(savebtn){savebtn.disabled=true;savebtn.innerHTML='<div class="sp"></div>';}
   setPulse('loading');
-  const r=await sPost('Members',{id:uid(),displayName:d,alias:a,year:y});
+  try {
+    const newId='mb'+Date.now();
+    await fsSet('members', newId, {displayName:d,alias:a,year:y});
+    closeModal(); toast('Đã thêm: '+d);
+    await loadAll(); render();
+  } catch(e){
+    toast('Lỗi: '+e.message,'er');
+    if(savebtn){savebtn.disabled=false;savebtn.innerHTML='Thêm';}
+  }
   setPulse('');
-  if(!r||r.error){toast((r&&r.error)||'Lỗi','er');if(savebtn){savebtn.disabled=false;savebtn.innerHTML='Thêm';}return;}
-  closeModal(); toast('Đã thêm: '+d);
-  await loadAll(); render();
 }
 
-function confirmDelMember(id){
+window.confirmDelMember=function(id){
   const m=S.members.find(x=>x.id===id);
   openModal('⚠️ Xóa thành viên',`Xóa <b>${esc(m?.displayName||id)}</b>? Dữ liệu tick của thành viên cũng bị xóa.`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelMember('${id}')">Xóa</button>`);
 }
-async function doDelMember(id){
+window.doDelMember=async function(id){
   closeModal(); setPulse('loading');
-  await Promise.all([sDel('Members','id',id),sDel('Ticks','memberId',id)]);
+  try {
+    await Promise.all([fsDel('members',id), fsDel('ticks',id)]);
+    if(S.mid===id){S.mid='';S.msel=new Set();}
+    toast('Đã xóa thành viên');
+  } catch(e){ toast('Lỗi: '+e.message,'er'); }
   setPulse('');
-  if(S.mid===id){S.mid='';S.msel=new Set();}
-  toast('Đã xóa thành viên'); await loadAll(); render();
+  await loadAll(); render();
 }
 
-// ─── SETTINGS PAGE ─────────────────────────────────────────────────────────
+// ─── SETTINGS PAGE ───────────────────────────────────────────────────────────
 function pageSettings(){
   const adminSection=S.admin
     ?`<div class="card" style="margin-bottom:14px">
@@ -729,67 +708,89 @@ function pageSettings(){
         <div class="irow"><input class="fi" id="pw" type="password" placeholder="Mật khẩu admin"><button class="btn btn-g" onclick="doLogin()">Vào</button></div>
       </div>`;
 
-  return `<div class="card" style="margin-bottom:14px">
-    <div class="card-title">🔗 SheetDB API URL</div>
-    <div class="irow"><input class="fi" id="cfg-u" value="${esc(API_URL)}" placeholder="https://sheetdb.io/api/v1/xxxxxxxxxx"><button class="btn btn-g" onclick="updateUrl()">Lưu</button></div>
-    <p style="font-size:.76rem;color:var(--haze);margin-top:8px">Lấy URL tại <strong>sheetdb.io</strong> sau khi kết nối Google Sheets.</p>
-  </div>
-  ${adminSection}
+  const hasConfig = !!loadSavedConfig();
+  return `${adminSection}
   <div class="card" style="margin-bottom:14px">
-    <div class="card-title">📋 Header cần có trong Google Sheets</div>
-    <div style="font-size:.82rem;color:var(--forest2);line-height:2.1">
-      <b>Sheet "Flowers":</b> <code>id | name | color | imgUrl | sortOrder</code><br>
-      <b>Sheet "Members":</b> <code>id | displayName | alias | year</code><br>
-      <b>Sheet "Ticks":</b> <code>memberId | flowerIds</code>
+    <div class="card-title">🔥 Firebase Config</div>
+    ${hasConfig
+      ?`<p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Đang kết nối Firebase. Paste config mới bên dưới để thay thế.</p>`
+      :`<p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Paste Firebase config JSON vào đây.</p>`}
+    <textarea class="fi fb-textarea" id="fb-cfg" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'>${hasConfig?JSON.stringify(loadSavedConfig(),null,2):''}</textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-g" onclick="saveFirebaseConfig()">💾 Lưu & Kết nối</button>
+      ${hasConfig?`<button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>`:''}
     </div>
-    <p style="font-size:.76rem;color:var(--mist);margin-top:10px;line-height:1.6">💡 <b>Lưu ý:</b> Nếu sheet trống hoàn toàn, SheetDB sẽ không nhận ra cấu trúc. Hãy gõ đúng header vào hàng đầu tiên của mỗi tab.</p>
   </div>
   <div class="card">
-    <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại</button>
-    &nbsp;
-    <button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>
+    <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
   </div>`;
 }
 
-async function updateUrl(){
-  const v=document.getElementById('cfg-u')?.value.trim();
-  if(!v){toast('Nhập URL!','wn');return;}
-  API_URL=v; localStorage.setItem(CK_URL,API_URL);
-  toast('Đã lưu URL'); await loadAll(); render();
+window.saveFirebaseConfig=async function(){
+  const raw=document.getElementById('fb-cfg')?.value.trim();
+  if(!raw){toast('Paste config JSON vào!','wn');return;}
+  let cfg;
+  try { cfg=JSON.parse(raw); } catch(e){ toast('JSON không hợp lệ: '+e.message,'er');return; }
+  if(!cfg.projectId){toast('Config thiếu projectId!','wn');return;}
+  localStorage.setItem(CK_FB, JSON.stringify(cfg));
+  const ok=initFirebase(cfg);
+  if(!ok){toast('Khởi động Firebase thất bại','er');return;}
+  toast('Đã kết nối Firebase 🔥');
+  await loadAll(); render();
 }
 
-function doLogin(){
+window.doLogin=function(){
   const pw=document.getElementById('pw')?.value;
   if(pw===ADMIN_PW){S.admin=true;localStorage.setItem(CK_ADMIN,'1');toast('Chào admin! 🌿');render();}
   else toast('Sai mật khẩu!','er');
 }
-function doLogout(){S.admin=false;localStorage.removeItem(CK_ADMIN);toast('Đã đăng xuất');render();}
+window.doLogout=function(){S.admin=false;localStorage.removeItem(CK_ADMIN);toast('Đã đăng xuất');render();}
 
-async function retry(){setPulse('loading');await loadAll();render();}
+window.retry=async function(){setPulse('loading');await loadAll();render();}
 
-function confirmReset(){
-  openModal('🔌 Ngắt kết nối','Xóa URL và quay về màn hình cài đặt?',
+window.confirmReset=function(){
+  openModal('🔌 Ngắt kết nối','Xóa cấu hình Firebase và quay về màn hình cài đặt?',
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doReset()">Ngắt</button>`);
 }
-function doReset(){closeModal();API_URL='';localStorage.removeItem(CK_URL);S={...S,loaded:false,err:null,flowers:[],members:[],ticks:{},page:'flowers',mid:'',msel:new Set()};render();}
+window.doReset=function(){
+  closeModal();
+  localStorage.removeItem(CK_FB);
+  db=null;
+  S={...S,loaded:false,err:null,flowers:[],members:[],ticks:{},page:'flowers',mid:'',msel:new Set()};
+  render();
+}
 
-// ─── SETUP & ERROR ─────────────────────────────────────────────────────────
+// ─── SETUP SCREEN ────────────────────────────────────────────────────────────
 function renderSetup(){
   return `<div class="setup">
     <h2>🌺 Chào mừng đến Hoa Viên</h2>
-    <p>Nhập API URL từ SheetDB để bắt đầu. App sẽ tự đọc dữ liệu từ Google Sheets của bạn.</p>
-    <ol>
-      <li>Tạo tài khoản tại <strong>sheetdb.io</strong></li>
-      <li>Kết nối Google Sheet của bạn</li>
-      <li>Trong Google Sheet, tạo 3 tab: <code>Flowers</code>, <code>Members</code>, <code>Ticks</code></li>
-      <li>Điền header đúng (xem phần Cài đặt)</li>
-      <li>Copy API URL và dán vào đây</li>
-    </ol>
-    <div class="irow" style="margin-top:18px">
-      <input class="fi" id="setup-u" placeholder="https://sheetdb.io/api/v1/xxxxxxxxxx">
-      <button class="btn btn-g" onclick="setupUrl()">Kết nối</button>
+    <p>Kết nối Firebase để lưu dữ liệu. Chỉ cần tạo project và paste config — miễn phí, không cần thẻ tín dụng.</p>
+    <div class="setup-steps">
+      <div class="setup-step"><div class="setup-num">1</div><div class="setup-text">Vào <strong>console.firebase.google.com</strong> → <em>Add project</em> → đặt tên → tạo xong.</div></div>
+      <div class="setup-step"><div class="setup-num">2</div><div class="setup-text">Trong project: <em>Project settings</em> → <em>Your apps</em> → click icon <strong>&lt;/&gt;</strong> (Web) → đăng ký app.</div></div>
+      <div class="setup-step"><div class="setup-num">3</div><div class="setup-text">Copy đoạn <code>firebaseConfig = { ... }</code> — chỉ cần phần JSON bên trong dấu ngoặc nhọn.</div></div>
+      <div class="setup-step"><div class="setup-num">4</div><div class="setup-text">Vào <em>Firestore Database</em> → <em>Create database</em> → chọn <strong>Start in test mode</strong> → chọn region → Done.</div></div>
+      <div class="setup-step"><div class="setup-num">5</div><div class="setup-text">Paste config vào ô bên dưới và nhấn <strong>Kết nối</strong>.</div></div>
     </div>
+    <div class="fg-col" style="margin-bottom:12px">
+      <label class="fl">Firebase Config JSON</label>
+      <textarea class="fi fb-textarea" id="setup-cfg" placeholder='{"apiKey":"AIza...","authDomain":"my-app.firebaseapp.com","projectId":"my-app","storageBucket":"my-app.appspot.com","messagingSenderId":"123456","appId":"1:123456:web:abc123"}'></textarea>
+    </div>
+    <button class="btn btn-g" onclick="setupFirebase()" style="width:100%;justify-content:center">🔥 Kết nối Firebase</button>
   </div>`;
+}
+
+window.setupFirebase=async function(){
+  const raw=document.getElementById('setup-cfg')?.value.trim();
+  if(!raw){toast('Paste config JSON vào!','wn');return;}
+  let cfg;
+  try { cfg=JSON.parse(raw); } catch(e){ toast('JSON không hợp lệ!','er');return; }
+  if(!cfg.projectId){toast('Config thiếu projectId!','wn');return;}
+  localStorage.setItem(CK_FB, JSON.stringify(cfg));
+  const ok=initFirebase(cfg);
+  if(!ok){toast('Khởi tạo Firebase thất bại','er');return;}
+  toast('Đã kết nối 🔥');
+  render(); await loadAll(); render();
 }
 
 function renderErr(){
@@ -803,15 +804,15 @@ function renderErr(){
   </div>`;
 }
 
-async function setupUrl(){
-  const v=document.getElementById('setup-u')?.value.trim();
-  if(!v){toast('Nhập URL!','wn');return;}
-  API_URL=v; localStorage.setItem(CK_URL,API_URL);
-  render(); await loadAll(); render();
+// ─── INIT ────────────────────────────────────────────────────────────────────
+async function init(){
+  const cfg=loadSavedConfig();
+  if(cfg){
+    const ok=initFirebase(cfg);
+    if(ok){ render(); await loadAll(); render(); return; }
+  }
+  render();
 }
-
-// ─── INIT ──────────────────────────────────────────────────────────────────
-async function init(){render();if(API_URL){await loadAll();render();}}
 init();
 </script>
 </body>
