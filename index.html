@@ -196,9 +196,10 @@ code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;co
 
 <!-- Firebase SDK -->
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
-  getFirestore, collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
+  getFirestore, enableIndexedDbPersistence,
+  collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
   doc, query, where, onSnapshot, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -234,8 +235,11 @@ let S = {
 // ─── FIREBASE INIT ────────────────────────────────────────────────────────────
 function initFirebase(config){
   try {
-    const app = initializeApp(config, 'hoavien-' + Date.now());
+    const existing = getApps().find(a => a.name === 'hoavien');
+    const app = existing ? getApp('hoavien') : initializeApp(config, 'hoavien');
     db = getFirestore(app);
+    // Cache offline — lần sau load từ cache, không cần chờ mạng
+    enableIndexedDbPersistence(db).catch(()=>{});
     return true;
   } catch(e) {
     console.error(e);
