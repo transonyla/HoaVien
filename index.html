@@ -765,12 +765,21 @@ function pageMembers(){
 function pageManage(){
   if(!isAdmin()&&!isLeader()) return `<div class="empty"><div class="empty-icon">🔒</div>Không có quyền</div>`;
   if(isLeader()) return manageLeaderSection();
-  // Admin sees everything
-  return manageClans()+manageLeaders()+manageFlowers()+manageAllMembers();
+  // Admin: tab-based layout
+  if(!S._manageTab) S._manageTab='clans';
+  const tabs=[
+    {k:'clans',  l:'🏅 Hội',        fn:manageClans},
+    {k:'leaders',l:'🏆 Hội trưởng', fn:manageLeaders},
+    {k:'flowers',l:'🌸 Hoa',         fn:manageFlowers},
+    {k:'members',l:'👥 Thành viên',  fn:manageAllMembers},
+  ];
+  const tabBar=`<div class="nav" style="margin-bottom:16px">${tabs.map(t=>`<button class="nvb ${S._manageTab===t.k?'on':''}" onclick="setManageTab('${t.k}')">${t.l}</button>`).join('')}</div>`;
+  const active=tabs.find(t=>t.k===S._manageTab)||tabs[0];
+  return tabBar+active.fn();
 }
+window.setManageTab=function(k){S._manageTab=k;render();};
 
 function manageLeaderSection(){
-  // Leader can only manage members of their clan
   return manageClanMembers();
 }
 
