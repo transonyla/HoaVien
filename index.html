@@ -333,17 +333,6 @@ const FIREBASE_CONFIG_DB2 = {
   "measurementId": "G-DSKXE8JC1P"
 };
 
-// ─── FIREBASE 3 CONFIG (db3 — ghi song song) ────────────────────────────────
-const FIREBASE_CONFIG_DB3 = {
-  "apiKey": "AIzaSyD8gxJfdhJPsOXyg-_j5LJL5hKQYHshC24",
-  "authDomain": "hoavien3-e45d9.firebaseapp.com",
-  "projectId": "hoavien3-e45d9",
-  "storageBucket": "hoavien3-e45d9.firebasestorage.app",
-  "messagingSenderId": "600420237860",
-  "appId": "1:600420237860:web:1b14495fcdbfb148444eb1",
-  "measurementId": "G-ENCRLWQ1H8"
-};
-
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
   {k:'trang',l:'Trắng/Xám', h:'#94a3b8'},
@@ -359,11 +348,10 @@ const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let db = null;
 let db2 = null; // Firebase 2 — ghi song song
-let db3 = null; // Firebase 3 — ghi song song
 
 // ─── TIME-SLOT READ BALANCER (30 phút cố định) ───────────────────────────────
 // Mỗi slot 30 phút, tất cả user trong cùng slot đều đọc từ cùng 1 DB.
-// Slot % 3 === 0 → DB1 | slot % 3 === 1 → DB2 | slot % 3 === 2 → DB3
+// Slot chẵn (0,2,4,...) → DB1 | Slot lẻ (1,3,5,...) → DB2
 // Hoàn toàn độc lập với số lần reload/user — chỉ phụ thuộc vào thời gian thực.
 const READ_SLOT_MS = 30 * 60 * 1000; // 30 phút
 function getCurrentSlot(){
@@ -373,15 +361,13 @@ function getCurrentSlot(){
 let _dbStatus = {
   db1: { read: false, write: false, err: null },
   db2: { read: false, write: false, err: null },
-  db3: { read: false, write: false, err: null },
 };
 function getReadDb(){
+  // Nếu db2 chưa sẵn sàng → luôn dùng db1
+  if(!db2) return { readDb: db, label: 'DB1', slot: getCurrentSlot() };
   const slot = getCurrentSlot();
-  const mod = slot % 3;
-  // Fallback an toàn: nếu DB được chọn chưa sẵn sàng → dùng DB1
-  if(mod === 1 && db2) return { readDb: db2, label: 'DB2', slot };
-  if(mod === 2 && db3) return { readDb: db3, label: 'DB3', slot };
-  return { readDb: db, label: 'DB1', slot };
+  const useDb2 = slot % 2 === 1;
+  return { readDb: useDb2 ? db2 : db, label: useDb2 ? 'DB2' : 'DB1', slot };
 }
 function updateDbStatusUI(){
   const el = document.getElementById('db-status-panel');
@@ -424,12 +410,6 @@ function initFirebase(config){
       const app2 = existing2 ? getApp('hoavien2') : initializeApp(FIREBASE_CONFIG_DB2,'hoavien2');
       db2 = getFirestore(app2);
     } catch(e2){ console.warn('db2 init failed:',e2); db2=null; }
-    // ── Khởi tạo db3 song song ──────────────────────────────────────────────
-    try {
-      const existing3 = getApps().find(a=>a.name==='hoavien3');
-      const app3 = existing3 ? getApp('hoavien3') : initializeApp(FIREBASE_CONFIG_DB3,'hoavien3');
-      db3 = getFirestore(app3);
-    } catch(e3){ console.warn('db3 init failed:',e3); db3=null; }
     return true;
   } catch(e){ console.error(e); return false; }
 }
@@ -608,11 +588,10 @@ async function fsGetAll(colName, readDb){
   return snap.docs.map(d=>({_id:d.id,...d.data()}));
 }
 
-// Ghi vào db1 VÀ db2 VÀ db3 song song (luôn cả 3 để đồng bộ)
+// Ghi vào db1 VÀ db2 song song (luôn cả 2 để đồng bộ)
 async function fsSet(colName,docId,data){
   _dbStatus.db1.write=false; _dbStatus.db1.err=null;
   _dbStatus.db2.write=false; _dbStatus.db2.err=null;
-  _dbStatus.db3.write=false; _dbStatus.db3.err=null;
   const p1=setDoc(doc(db,colName,docId),data,{merge:true})
     .then(()=>{ _dbStatus.db1.write=true; updateDbStatusUI(); })
     .catch(e=>{ _dbStatus.db1.err=e.message; updateDbStatusUI(); throw e; });
@@ -621,19 +600,13 @@ async function fsSet(colName,docId,data){
         .then(()=>{ _dbStatus.db2.write=true; updateDbStatusUI(); })
         .catch(e=>{ _dbStatus.db2.err=e.message; updateDbStatusUI(); })
     : Promise.resolve();
-  const p3=db3
-    ? setDoc(doc(db3,colName,docId),data,{merge:true})
-        .then(()=>{ _dbStatus.db3.write=true; updateDbStatusUI(); })
-        .catch(e=>{ _dbStatus.db3.err=e.message; updateDbStatusUI(); })
-    : Promise.resolve();
-  await Promise.all([p1,p2,p3]);
+  await Promise.all([p1,p2]);
 }
 
-// Xóa khỏi db1 VÀ db2 VÀ db3 song song (luôn cả 3 để đồng bộ)
+// Xóa khỏi db1 VÀ db2 song song (luôn cả 2 để đồng bộ)
 async function fsDel(colName,docId){
   _dbStatus.db1.write=false; _dbStatus.db1.err=null;
   _dbStatus.db2.write=false; _dbStatus.db2.err=null;
-  _dbStatus.db3.write=false; _dbStatus.db3.err=null;
   const p1=deleteDoc(doc(db,colName,docId))
     .then(()=>{ _dbStatus.db1.write=true; updateDbStatusUI(); })
     .catch(e=>{ _dbStatus.db1.err=e.message; updateDbStatusUI(); throw e; });
@@ -642,12 +615,7 @@ async function fsDel(colName,docId){
         .then(()=>{ _dbStatus.db2.write=true; updateDbStatusUI(); })
         .catch(e=>{ _dbStatus.db2.err=e.message; updateDbStatusUI(); })
     : Promise.resolve();
-  const p3=db3
-    ? deleteDoc(doc(db3,colName,docId))
-        .then(()=>{ _dbStatus.db3.write=true; updateDbStatusUI(); })
-        .catch(e=>{ _dbStatus.db3.err=e.message; updateDbStatusUI(); })
-    : Promise.resolve();
-  await Promise.all([p1,p2,p3]);
+  await Promise.all([p1,p2]);
 }
 
 // ─── LOAD ALL ────────────────────────────────────────────────────────────────
@@ -1701,12 +1669,9 @@ function buildDbStatusHtml(){
   const r = S._readDbLabel || 'DB1';
   const db1ok = _dbStatus.db1.write;
   const db2ok = _dbStatus.db2.write;
-  const db3ok = _dbStatus.db3.write;
   const db1err = _dbStatus.db1.err;
   const db2err = _dbStatus.db2.err;
-  const db3err = _dbStatus.db3.err;
   const hasDb2 = !!db2;
-  const hasDb3 = !!db3;
 
   const readBar = (label, active) => `
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:1.5px solid ${active?'#22c55e':'var(--bd)'};background:${active?'#f0fdf4':'var(--sage)'}">
@@ -1724,7 +1689,7 @@ function buildDbStatusHtml(){
       <div>
         <div style="font-size:.8rem;font-weight:700;color:${!available?'var(--mist)':err?'#dc2626':ok?'#1d4ed8':'var(--mist)'}">✏️ Ghi/Xóa — ${label}</div>
         <div style="font-size:.7rem;color:${!available?'var(--haze)':err?'#dc2626':ok?'#1e40af':'var(--mist)'}">
-          ${!available?'Chưa cấu hình':err?'❌ Lỗi: '+err:ok?'✅ Ghi thành công':'Chờ thao tác ghi...'}
+          ${!available?'Chưa cấu hình DB2':err?'❌ Lỗi: '+err:ok?'✅ Ghi thành công':'Chờ thao tác ghi...'}
         </div>
       </div>
       ${ok&&available?'<span style="margin-left:auto;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;background:#3b82f6;color:#fff">OK</span>':''}
@@ -1740,31 +1705,28 @@ function buildDbStatusHtml(){
   const remMin = Math.floor(remaining / 60000);
   const remSec = Math.floor((remaining % 60000) / 1000);
   const slotNum = S._readSlot || Math.floor(now / slotMs);
-  const nextMap = {'DB1':'DB2','DB2':'DB3','DB3':'DB1'};
-  const nextDb = nextMap[r] || 'DB2';
+  const nextDb = r === 'DB1' ? 'DB2' : 'DB1';
 
   return `
     <div style="margin-bottom:12px">
-      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📖 Trạng thái Đọc (slot 30 phút — luân phiên DB1→DB2→DB3)</div>
+      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📖 Trạng thái Đọc (slot thời gian 30 phút)</div>
       <div style="display:flex;flex-direction:column;gap:7px">
         ${readBar('DB1', r==='DB1')}
         ${readBar('DB2', r==='DB2')}
-        ${readBar('DB3', r==='DB3')}
       </div>
       <div style="margin-top:8px;padding:8px 12px;border-radius:9px;background:#fefce8;border:1.5px solid #fde047;font-size:.72rem;color:#854d0e;line-height:1.7">
         🕐 <strong>Slot #${slotNum}</strong> — Còn <strong>${remMin}p ${remSec}s</strong> nữa sẽ chuyển sang <strong>${nextDb}</strong>
       </div>
     </div>
     <div style="margin-bottom:4px">
-      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✏️ Trạng thái Ghi/Xóa (luôn cả 3 DB)</div>
+      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✏️ Trạng thái Ghi/Xóa (luôn cả 2 DB)</div>
       <div style="display:flex;flex-direction:column;gap:7px">
         ${writeBar('DB1', db1ok, db1err, true)}
         ${writeBar('DB2', db2ok, db2err, hasDb2)}
-        ${writeBar('DB3', db3ok, db3err, hasDb3)}
       </div>
     </div>
     <div style="font-size:.71rem;color:var(--mist);margin-top:10px;line-height:1.7">
-      ℹ️ Mỗi slot 30 phút cố định theo giờ thực — mọi user dù reload bao nhiêu lần trong slot đó đều đọc cùng 1 DB. Ghi & Xóa luôn đồng bộ cả 3 DB.
+      ℹ️ Mỗi slot 30 phút cố định theo giờ thực — mọi user dù reload bao nhiêu lần trong slot đó đều đọc cùng 1 DB. Ghi & Xóa luôn đồng bộ cả 2 DB.
     </div>`;
 }
 
@@ -1823,7 +1785,6 @@ window.doReset=function(){
   localStorage.removeItem(CK_FB);
   db=null;
   db2=null;
-  db3=null;
   S={...S,loaded:false,err:null,flowers:[],clans:[],leaders:[],members:[],ticks:{},page:'flowers',msel:new Set(),proxyMemberId:null,_lastTickSubject:null,tcolor:'all',tq:'',fcolor:'all',fq:''};
   render();
 };
