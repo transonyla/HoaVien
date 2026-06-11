@@ -349,9 +349,14 @@ const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
 let db = null;
 let db2 = null; // Firebase 2 — ghi song song
 
-// ─── SMART READ BALANCER ──────────────────────────────────────────────────────
-// Theo dõi db nào đang được dùng để ĐỌC (luân phiên mỗi lần loadAll)
-let _readDbIndex = 0; // 0 = db1, 1 = db2
+// ─── TIME-SLOT READ BALANCER (30 phút cố định) ───────────────────────────────
+// Mỗi slot 30 phút, tất cả user trong cùng slot đều đọc từ cùng 1 DB.
+// Slot chẵn (0,2,4,...) → DB1 | Slot lẻ (1,3,5,...) → DB2
+// Hoàn toàn độc lập với số lần reload/user — chỉ phụ thuộc vào thời gian thực.
+const READ_SLOT_MS = 30 * 60 * 1000; // 30 phút
+function getCurrentSlot(){
+  return Math.floor(Date.now() / READ_SLOT_MS);
+}
 // Trạng thái kết nối thực tế của từng db (dùng cho UI)
 let _dbStatus = {
   db1: { read: false, write: false, err: null },
@@ -359,9 +364,10 @@ let _dbStatus = {
 };
 function getReadDb(){
   // Nếu db2 chưa sẵn sàng → luôn dùng db1
-  if(!db2) return { readDb: db, label: 'DB1' };
-  const useDb2 = _readDbIndex % 2 === 1;
-  return { readDb: useDb2 ? db2 : db, label: useDb2 ? 'DB2' : 'DB1' };
+  if(!db2) return { readDb: db, label: 'DB1', slot: getCurrentSlot() };
+  const slot = getCurrentSlot();
+  const useDb2 = slot % 2 === 1;
+  return { readDb: useDb2 ? db2 : db, label: useDb2 ? 'DB2' : 'DB1', slot };
 }
 function updateDbStatusUI(){
   const el = document.getElementById('db-status-panel');
@@ -624,10 +630,10 @@ async function loadAll(force=false){
   }
   S.loaded=false;S.err=null;setPulse('loading');
 
-  // ── Chọn DB đọc luân phiên ─────────────────────────────────────────────────
-  const { readDb, label: readLabel } = getReadDb();
-  _readDbIndex++; // tăng index cho lần sau
+  // ── Chọn DB đọc theo slot thời gian 30 phút ────────────────────────────────
+  const { readDb, label: readLabel, slot } = getReadDb();
   S._readDbLabel = readLabel; // lưu vào state để UI hiển thị
+  S._readSlot = slot; // slot hiện tại (debug)
   updateDbStatusUI();
 
   try {
@@ -1690,12 +1696,26 @@ function buildDbStatusHtml(){
       ${err&&available?'<span style="margin-left:auto;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;background:#ef4444;color:#fff">ERR</span>':''}
     </div>`;
 
+  // Tính thời gian còn lại của slot hiện tại
+  const now = Date.now();
+  const slotMs = 30 * 60 * 1000;
+  const slotStart = Math.floor(now / slotMs) * slotMs;
+  const slotEnd = slotStart + slotMs;
+  const remaining = slotEnd - now;
+  const remMin = Math.floor(remaining / 60000);
+  const remSec = Math.floor((remaining % 60000) / 1000);
+  const slotNum = S._readSlot || Math.floor(now / slotMs);
+  const nextDb = r === 'DB1' ? 'DB2' : 'DB1';
+
   return `
     <div style="margin-bottom:12px">
-      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📖 Trạng thái Đọc (luân phiên DB1 ↔ DB2)</div>
+      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📖 Trạng thái Đọc (slot thời gian 30 phút)</div>
       <div style="display:flex;flex-direction:column;gap:7px">
         ${readBar('DB1', r==='DB1')}
         ${readBar('DB2', r==='DB2')}
+      </div>
+      <div style="margin-top:8px;padding:8px 12px;border-radius:9px;background:#fefce8;border:1.5px solid #fde047;font-size:.72rem;color:#854d0e;line-height:1.7">
+        🕐 <strong>Slot #${slotNum}</strong> — Còn <strong>${remMin}p ${remSec}s</strong> nữa sẽ chuyển sang <strong>${nextDb}</strong>
       </div>
     </div>
     <div style="margin-bottom:4px">
@@ -1706,7 +1726,7 @@ function buildDbStatusHtml(){
       </div>
     </div>
     <div style="font-size:.71rem;color:var(--mist);margin-top:10px;line-height:1.7">
-      ℹ️ Mỗi lần tải dữ liệu sẽ luân phiên đọc DB1 → DB2 → DB1... Ghi & Xóa luôn đồng bộ cả 2 DB để đảm bảo nhất quán.
+      ℹ️ Mỗi slot 30 phút cố định theo giờ thực — mọi user dù reload bao nhiêu lần trong slot đó đều đọc cùng 1 DB. Ghi & Xóa luôn đồng bộ cả 2 DB.
     </div>`;
 }
 
