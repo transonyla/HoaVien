@@ -392,6 +392,7 @@ function initFirebase2(config){
     return true;
   } catch(e){ console.error('TK2 init error',e); return false; }
 }
+window.initFirebase2 = initFirebase2; // expose ra window để saveCopyTargetAsTk2 gọi được
 // active TK helpers
 function getActiveTk(){ return localStorage.getItem(CK_ACTIVE_TK)||'tk1'; }
 function setActiveTk(tk){ localStorage.setItem(CK_ACTIVE_TK,tk); }
