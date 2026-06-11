@@ -1032,8 +1032,9 @@ window.doAddClan=async function(){
   try {
     const newId='cl'+Date.now();
     await fsSet('clans',newId,{name});
+    S.clans.push({id:newId,name});
     closeModal();toast('Đã thêm Hội: '+name);
-    await loadAll();render();
+    render();
   } catch(e){
     toast('Lỗi: '+e.message,'er');
     if(btn){btn.disabled=false;btn.innerHTML='Thêm';}
@@ -1049,10 +1050,11 @@ window.doDelClan=async function(id){
   closeModal();setPulse('loading');
   try {
     await fsDel('clans',id);
+    S.clans=S.clans.filter(c=>c.id!==id);
     toast('Đã xóa Hội');
   } catch(e){toast('Lỗi: '+e.message,'er');}
   setPulse('');
-  await loadAll();render();
+  render();
 };
 
 // ── LEADERS (ADMIN) ───────────────────────────────────────────────────────────
@@ -1099,8 +1101,9 @@ window.doAddLeader=async function(){
   try {
     const newId='ld'+Date.now();
     await fsSet('leaders',newId,{username:un,password:pw,clanId:cl,displayName:dn});
+    S.leaders.push({id:newId,username:un,password:pw,clanId:cl,displayName:dn});
     closeModal();toast('Đã thêm hội trưởng: '+dn);
-    await loadAll();render();
+    render();
   } catch(e){
     toast('Lỗi: '+e.message,'er');
     if(btn){btn.disabled=false;btn.innerHTML='Thêm';}
@@ -1114,10 +1117,15 @@ window.confirmDelLeader=function(id){
 };
 window.doDelLeader=async function(id){
   closeModal();setPulse('loading');
-  try { await fsDel('leaders',id);toast('Đã xóa hội trưởng'); }
+  try {
+    await fsDel('leaders',id);
+    S.leaders=S.leaders.filter(l=>l.id!==id);
+    delete S.ticks[id];
+    toast('Đã xóa hội trưởng');
+  }
   catch(e){toast('Lỗi: '+e.message,'er');}
   setPulse('');
-  await loadAll();render();
+  render();
 };
 
 // ── CLOUDINARY UPLOAD ─────────────────────────────────────────────────────────
@@ -1258,12 +1266,17 @@ window.doSaveFlower=async function(){
   try {
     if(S._editFlowerId){
       await fsSet('flowers',S._editFlowerId,{name,color,imgUrl,sortOrder});
+      const f=S.flowers.find(x=>x.id===S._editFlowerId);
+      if(f){f.name=name;f.color=color;f.imgUrl=imgUrl;f.sortOrder=sortOrder;}
       toast('Đã cập nhật hoa');
     } else {
-      await fsSet('flowers','f'+Date.now(),{name,color,imgUrl,sortOrder});
+      const newId='f'+Date.now();
+      await fsSet('flowers',newId,{name,color,imgUrl,sortOrder});
+      S.flowers.push({id:newId,name,color,imgUrl,sortOrder});
       toast('Đã thêm hoa 🌸');
     }
-    closeModal();await loadAll();render();
+    S.flowers.sort((a,b)=>a.sortOrder-b.sortOrder);
+    closeModal();render();
   } catch(e){
     toast('Lỗi: '+e.message,'er');
     if(btn){btn.disabled=false;btn.innerHTML='💾 Lưu';}
@@ -1277,9 +1290,14 @@ window.confirmDelFlower=function(id){
 };
 window.doDelFlower=async function(id){
   closeModal();setPulse('loading');
-  try { await fsDel('flowers',id);toast('Đã xóa hoa'); }
+  try {
+    await fsDel('flowers',id);
+    S.flowers=S.flowers.filter(f=>f.id!==id);
+    Object.keys(S.ticks).forEach(k=>{S.ticks[k]=(S.ticks[k]||[]).filter(fid=>fid!==id);});
+    toast('Đã xóa hoa');
+  }
   catch(e){toast('Lỗi: '+e.message,'er');}
-  setPulse('');await loadAll();render();
+  setPulse('');render();
 };
 
 // ── ALL MEMBERS (ADMIN) ───────────────────────────────────────────────────────
@@ -1354,8 +1372,9 @@ window.doAddMember=async function(){
     const leaderId = isLeader() ? S.session.id : '';
     const newId='mb'+Date.now();
     await fsSet('members',newId,{username:u,password:p,displayName:d,alias:a,year:y,clanId:cl,leaderId});
+    S.members.push({id:newId,username:u,password:p,clanId:cl,leaderId,displayName:d,alias:a,year:y});
     closeModal();toast('Đã thêm: '+d);
-    await loadAll();render();
+    render();
   } catch(e){
     toast('Lỗi: '+e.message,'er');
     if(btn){btn.disabled=false;btn.innerHTML='Thêm';}
@@ -1371,10 +1390,12 @@ window.doDelMember=async function(id){
   closeModal();setPulse('loading');
   try {
     await Promise.all([fsDel('members',id),fsDel('ticks',id)]);
+    S.members=S.members.filter(m=>m.id!==id);
+    delete S.ticks[id];
     toast('Đã xóa thành viên');
   } catch(e){toast('Lỗi: '+e.message,'er');}
   setPulse('');
-  await loadAll();render();
+  render();
 };
 
 // ─── SETTINGS PAGE (ADMIN ONLY) ──────────────────────────────────────────────
