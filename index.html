@@ -422,16 +422,33 @@ window.closeMemberFlowers=function(){
 
 // ─── EXPOSED STATE SETTERS (needed by inline onclick in ES module) ────────────
 window.setLoginTab=function(t){S.loginTab=t;render();};
-window.setFcolor=function(v){S.fcolor=v;render();};
+window.setFcolor=function(v){
+  S.fcolor=v;
+  // Partial update nếu đang ở tick page hoặc flowers page
+  const tickGrid=document.getElementById('tick-grid');
+  if(tickGrid){
+    // Update cả cfbar (để highlight đúng nút) + grid
+    const cfbar=document.getElementById('tick-cfbar');
+    if(cfbar) cfbar.innerHTML=buildTickCfbar();
+    tickGrid.innerHTML=buildTickGrid();
+    return;
+  }
+  const flowerGrid=document.getElementById('flower-grid');
+  if(flowerGrid){flowerGrid.innerHTML=buildFlowerGrid();return;}
+  render();
+};
 let _fqTimer=null;
 window.setFq=function(v){
   S.fq=v;
   clearTimeout(_fqTimer);
   _fqTimer=setTimeout(()=>{
-    const grid=document.getElementById('flower-grid');
-    if(grid) grid.innerHTML=buildFlowerGrid();
-    else render();
-  },160); // 160ms debounce — giảm re-render khi gõ nhanh
+    // Partial update: chỉ update phần grid, không rebuild toàn DOM → giữ focus input
+    const tickGrid=document.getElementById('tick-grid');
+    if(tickGrid){tickGrid.innerHTML=buildTickGrid();return;}
+    const flowerGrid=document.getElementById('flower-grid');
+    if(flowerGrid){flowerGrid.innerHTML=buildFlowerGrid();return;}
+    render();
+  },160);
 };
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -558,14 +575,6 @@ function myClanName(){
 function render(){
   const app=document.getElementById('app');
   if(!app) return;
-
-  // Sync msel from saved ticks before savebar reads S.msel.size
-  if((isMember()||isLeader()) && S.session?.id){
-    const subjectId = (isLeader() && S.proxyMemberId) ? S.proxyMemberId : S.session.id;
-    if(S.msel.size===0 && (S.ticks[subjectId]||[]).length>0){
-      S.msel=new Set(S.ticks[subjectId]);
-    }
-  }
 
   // savebar
   const sb=document.getElementById('savebar');
@@ -857,37 +866,54 @@ function buildFlowerGrid(){
   }).join('');
 }
 
+// ─── TICK PAGE HELPERS (partial-update safe) ──────────────────────────────────
+function buildTickCfbar(){
+  return COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
+    const on=S.fcolor===c.k;
+    return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
+  }).join('');
+}
+function buildTickGrid(){
+  const q=S.fq.trim().toLowerCase();
+  let list=S.flowers;
+  if(S.fcolor!=='all') list=list.filter(f=>f.color===S.fcolor);
+  if(q) list=list.filter(f=>f.name.toLowerCase().includes(q));
+  if(!list.length) return `<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`;
+  const groups={};
+  list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
+  return Object.entries(groups).map(([ck,flowers])=>{
+    const cv=col(ck);
+    return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${flowers.length}</span></div>
+    <div class="fg">${flowers.map(f=>{
+      const tk=S.msel.has(f.id);
+      return `<div class="fc tc ${tk?'ticked':''}" onclick="toggleTick('${f.id}')">
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}
+        <div class="chk">${tk?'✓':''}</div></div>
+        <div class="fc-body"><div class="fc-name">${esc(f.name)}</div>
+        <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span></div>
+      </div>`;
+    }).join('')}</div>`;
+  }).join('');
+}
+
 // ─── TICK PAGE (MEMBER / LEADER) ──────────────────────────────────────────────
 function pageTick(){
   if(!isMember()&&!isLeader()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ thành viên mới có thể đánh dấu hoa</div>`;
 
   const myId = S.session.id;
   const clanName=myClanName();
-
-  // Xác định subject đang được tick: leader có thể chọn proxy
   const subjectId = (isLeader() && S.proxyMemberId) ? S.proxyMemberId : myId;
 
   const me = isMember()
     ? S.members.find(m=>m.id===myId)
     : S.leaders.find(l=>l.id===myId);
 
-  // Đồng bộ msel theo subject hiện tại khi subject thay đổi
+  // Load msel chỉ khi subject thay đổi (source of truth = _lastTickSubject, không dùng msel.size)
   if(S._lastTickSubject !== subjectId){
     S._lastTickSubject = subjectId;
     S.msel = new Set(S.ticks[subjectId]||[]);
-    // cập nhật savebar count
-    const sbc=document.getElementById('sbc');
-    if(sbc) sbc.textContent=S.msel.size;
   }
 
-  const q=S.fq.trim().toLowerCase();
-  let list=S.flowers;
-  if(S.fcolor!=='all') list=list.filter(f=>f.color===S.fcolor);
-  if(q) list=list.filter(f=>f.name.toLowerCase().includes(q));
-  const groups={};
-  list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
-
-  // ── Proxy selector (chỉ hiện với Hội trưởng) ────────────────────────────────
   let proxyHtml='';
   if(isLeader()){
     const clanMembers=S.members.filter(m=>m.clanId===myClanId());
@@ -904,47 +930,27 @@ function pageTick(){
     </div>`;
   }
 
-  const displaySubject = S.proxyMemberId
-    ? S.members.find(x=>x.id===S.proxyMemberId)
-    : me;
-
-  const colorFilter=`<div class="cfbar">
-    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả</button>
-    ${COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
-      const on=S.fcolor===c.k;
-      return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
-    }).join('')}
-  </div>`;
-  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="setFq(this.value)"></div>`;
-
+  const displaySubject = S.proxyMemberId ? S.members.find(x=>x.id===S.proxyMemberId) : me;
   const info=`<div class="card" style="margin-bottom:14px">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       ${S.proxyMemberId
         ? `<span class="role-chip role-member">🌸 ${esc(displaySubject?.displayName||'')}</span><span style="font-size:.75rem;color:var(--clan);font-weight:600">← được tick bởi Hội trưởng</span>`
         : isLeader()
           ? `<span class="role-chip role-leader">🏆 ${esc(me?.displayName||'')}</span>`
-          : `<span class="role-chip role-member">🌸 ${esc(me?.displayName||'')}</span>`
-      }
+          : `<span class="role-chip role-member">🌸 ${esc(me?.displayName||'')}</span>`}
       <span class="clan-tag">🏅 Hội ${esc(clanName)}</span>
       <span style="font-size:.8rem;color:var(--mist);margin-left:auto">${S.msel.size}/${S.flowers.length} hoa đã chọn</span>
     </div>
   </div>`;
 
-  const html=Object.entries(groups).map(([ck,flowers])=>{
-    const cv=col(ck);
-    return `<div class="grp"><div class="grp-bar" style="background:${cv.h}"></div><h2 style="color:${cv.h}">${cv.l}</h2><span class="grp-cnt">${flowers.length}</span></div>
-    <div class="fg">${flowers.map(f=>{
-      const tk=S.msel.has(f.id);
-      return `<div class="fc tc ${tk?'ticked':''}" onclick="toggleTick('${f.id}')">
-        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}
-        <div class="chk">${tk?'✓':''}</div></div>
-        <div class="fc-body"><div class="fc-name">${esc(f.name)}</div>
-        <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span></div>
-      </div>`;
-    }).join('')}</div>`;
-  }).join('');
+  // cfbar và grid có id riêng → partial update không cần rebuild cả trang
+  const colorFilter=`<div class="cfbar" id="tick-cfbar">
+    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả</button>
+    ${buildTickCfbar()}
+  </div>`;
+  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="setFq(this.value)"></div>`;
 
-  return proxyHtml+info+colorFilter+searchBar+(list.length?html:`<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`);
+  return proxyHtml+info+colorFilter+searchBar+`<div id="tick-grid">${buildTickGrid()}</div>`;
 }
 
 window.setProxyMember=function(memberId){
