@@ -301,7 +301,7 @@ import {
   collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
   doc, query, where, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-// expose Firebase refs để initFirebase2 dùng được
+// expose Firebase refs để dùng cho chức năng sao chép sang Firebase đích
 const _fbInit=initializeApp, _fbApps=getApps, _fbGetApp=getApp, _fbGetFirestore=getFirestore;
 
 // ─── FIREBASE CONFIG ─────────────────────────────────────────────────────────
@@ -314,16 +314,6 @@ const FIREBASE_CONFIG = {
   "appId": "1:269916169212:web:3e6ebbd0d41299ffdfc879"
 };
 
-// ─── FIREBASE 2 CONFIG (backup — ghi song song) ──────────────────────────────
-const FIREBASE_CONFIG_2 = {
-  "apiKey": "AIzaSyAsccZgD8tFhSq_YPLtNSHThi1fikOvk80",
-  "authDomain": "hoavien2-d1ecd.firebaseapp.com",
-  "projectId": "hoavien2-d1ecd",
-  "storageBucket": "hoavien2-d1ecd.firebasestorage.app",
-  "messagingSenderId": "562733700961",
-  "appId": "1:562733700961:web:d420a6cbe27d83a8245720"
-};
-
 const CK_FB    = 'hv4_fb_config';
 const CK_SESSION = 'hv5_session'; // {role:'admin'|'leader'|'member', id, clanId}
 const CK_CACHE_TS = 'hv5_cache_ts'; // last loadAll timestamp (ms)
@@ -332,9 +322,7 @@ const ADMIN_PW_HASH = '67cec4b5d00d79ebebcffdb35234c91c785dca6d03235137aecb44d04
 const CLOUDINARY_CLOUD = 'dcjv64yqh';
 const CLOUDINARY_PRESET = 'Hoavien';
 
-// ─── FIREBASE 2 (backup — ghi song song, đọc luôn từ db1) ───────────────────
-const CK_FB2 = 'hv5_fb2_config'; // giữ để saveCopyTargetAsTk2 vẫn hoạt động
-let db2 = null; // Firestore instance của Firebase 2
+// ─── (đã gỡ Firebase 2 song song) ─────────────────────────────────────────
 
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
@@ -387,20 +375,6 @@ function loadSavedConfig(){
   if(!raw) return null;
   try { return JSON.parse(raw); } catch(e){ return null; }
 }
-function loadSavedConfig2(){
-  const raw=localStorage.getItem(CK_FB2);
-  if(!raw) return null;
-  try { return JSON.parse(raw); } catch(e){ return null; }
-}
-function initFirebase2(config){
-  try {
-    const existing = _fbApps().find(a=>a.name==='hoavien-tk2');
-    const app2 = existing ? _fbGetApp('hoavien-tk2') : _fbInit(config,'hoavien-tk2');
-    db2 = _fbGetFirestore(app2);
-    return true;
-  } catch(e){ console.error('TK2 init error',e); return false; }
-}
-
 
 // ─── PULSE ───────────────────────────────────────────────────────────────────
 const setPulse = s => {
@@ -571,24 +545,14 @@ async function fsGetAll(colName){
   return snap.docs.map(d=>({_id:d.id,...d.data()}));
 }
 
-// Ghi đồng thời db1 và db2 (await cả 2)
+// Ghi vào db1 (Firebase 1)
 async function fsSet(colName,docId,data){
-  const writes=[setDoc(doc(db,colName,docId),data,{merge:true})];
-  if(db2) writes.push(
-    setDoc(doc(db2,colName,docId),data,{merge:true})
-      .catch(e=>{ console.warn('DB2 write warn:',e.message); toast('⚠️ Firebase 2 ghi lỗi: '+e.message,'er'); })
-  );
-  await Promise.all(writes);
+  await setDoc(doc(db,colName,docId),data,{merge:true});
 }
 
-// Xóa đồng thời db1 và db2
+// Xóa khỏi db1
 async function fsDel(colName,docId){
-  const dels=[deleteDoc(doc(db,colName,docId))];
-  if(db2) dels.push(
-    deleteDoc(doc(db2,colName,docId))
-      .catch(e=>console.warn('DB2 del warn:',e.message))
-  );
-  await Promise.all(dels);
+  await deleteDoc(doc(db,colName,docId));
 }
 
 // ─── LOAD ALL ────────────────────────────────────────────────────────────────
@@ -1648,7 +1612,6 @@ function pageSettings(){
   </div>
   <div class="card" style="margin-top:14px">
     <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
-    <span style="font-size:.75rem;color:var(--mist);margin-left:10px">Đọc: <strong>🟢 Firebase 1</strong> &nbsp;|&nbsp; Ghi: <strong>${db2?'🟢 FB1 + FB2 song song':'⚠️ Chỉ FB1 (FB2 chưa init)'}</strong></span>
   </div>
   <div class="card" style="margin-top:14px;border-left:3px solid var(--clan)">
     <div class="card-title">📦 Sao chép dữ liệu sang Firebase khác</div>
@@ -1657,12 +1620,7 @@ function pageSettings(){
     <div id="copy-log" style="display:none;background:var(--sage);border-radius:10px;padding:12px;font-size:.78rem;color:var(--forest2);margin:10px 0;line-height:1.9"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
       <button class="btn" style="background:var(--clan);color:#fff" onclick="copyToTarget()">📤 Bắt đầu sao chép</button>
-      <button class="btn btn-g btn-sm" onclick="saveCopyTargetAsTk2()">💾 Lưu làm Firebase 2</button>
     </div>
-  </div>
-  <div class="card" style="margin-top:14px;border-left:3px solid var(--leaf)">
-    <div class="card-title">🔗 Trạng thái Firebase 2 (Backup)</div>
-    <p style="font-size:.82rem;color:var(--mist);margin-bottom:6px">${db2?'✅ Firebase 2 đã kết nối — mọi thao tác ghi/xóa sẽ được đồng bộ song song.':'⚠️ Firebase 2 chưa kết nối — config đã được nhúng cứng, kiểm tra console nếu có lỗi.'}</p>
   </div>`;
 }
 window.saveFirebaseConfig=async function(){
@@ -1726,18 +1684,6 @@ window.copyToTarget=async function(){
   } catch(e){ log('❌ Lỗi: '+e.message); }
 };
 
-window.saveCopyTargetAsTk2=function(){
-  const raw=document.getElementById('copy-target-cfg')?.value.trim();
-  if(!raw){toast('Paste config JSON vào trước!','wn');return;}
-  let cfg;
-  try{cfg=JSON.parse(raw);}catch(e){toast('JSON không hợp lệ','er');return;}
-  if(!cfg.projectId){toast('Thiếu projectId!','wn');return;}
-  localStorage.setItem(CK_FB2,JSON.stringify(cfg));
-  const ok=initFirebase2(cfg);
-  if(ok){ toast('✅ Đã lưu và kết nối Firebase 2!'); render(); }
-  else { toast('Lưu OK nhưng kết nối thất bại','er'); }
-};
-
 
 
 // ─── SETUP SCREEN ────────────────────────────────────────────────────────────
@@ -1784,9 +1730,6 @@ function renderErr(){
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function init(){
-  // Khởi tạo Firebase 2 từ config nhúng cứng
-  initFirebase2(FIREBASE_CONFIG_2);
-
   const cfg=FIREBASE_CONFIG||loadSavedConfig();
   if(cfg){
     const ok=initFirebase(cfg);
