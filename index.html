@@ -1083,7 +1083,7 @@ function pageMembers(){
     : S.members;
   const myLeaders = (isLeader()||isMember())
     ? S.leaders.filter(l=>l.clanId===myClanId())
-    : [];
+    : S.leaders;
 
   const total=S.flowers.length;
   const clanName = (isLeader()||isMember()) ? myClanName() : null;
@@ -1091,7 +1091,7 @@ function pageMembers(){
   const statsHtml=`<div class="stats">
     <div class="sc"><div class="sv">${myMembers.length+myLeaders.length}</div><div class="sl">${clanName?'TV Hội '+clanName:'Thành viên'}</div></div>
     <div class="sc"><div class="sv">${total}</div><div class="sl">Loài hoa</div></div>
-    <div class="sc"><div class="sv">${total?Math.round(myMembers.reduce((a,m)=>a+(S.ticks[m.id]||[]).length,0)/Math.max(myMembers.length,1)):0}</div><div class="sl">TB / người</div></div>
+    <div class="sc"><div class="sv">${total?Math.round([...myMembers,...myLeaders].reduce((a,m)=>a+(S.ticks[m.id]||[]).length,0)/Math.max(myMembers.length+myLeaders.length,1)):0}</div><div class="sl">TB / người</div></div>
   </div>
   ${(isLeader()||isMember()) && myLeaders.length>0 ? `<div class="card" style="margin-bottom:14px;border-left:3px solid var(--clan);background:#faf5ff">
     <div style="display:flex;align-items:flex-start;gap:9px">
@@ -1103,15 +1103,17 @@ function pageMembers(){
     </div>
   </div>` : ''}`;
 
-  // For leader/member view, show leader(s) of the clan first, then members
+  // For leader/member/admin view, show leader(s) of the clan first, then members
   const leaderRows = myLeaders.map(l=>{
     const n=(S.ticks[l.id]||[]).length;
     const pct=total?Math.round(n/total*100):0;
+    const clan=S.clans.find(c=>c.id===l.clanId);
     return `<tr>
       <td style="color:var(--haze);font-weight:800;width:28px">🏆</td>
       <td><div class="mb-name-link" style="font-weight:700" onclick="openMemberFlowers('${l.id}','leader')">${esc(l.displayName)}</div><div style="font-size:.72rem;color:var(--clan)">Hội trưởng</div></td>
-      ${isAdmin()?`<td></td>`:''}
+      ${isAdmin()?`<td><span class="clan-tag">${clan?'🏅 '+esc(clan.name):'—'}</span></td>`:''}
       <td><div class="mbar-w"><div class="mbar"><div class="mbar-f" style="width:${pct}%"></div></div><span class="mlbl">${n}/${total}</span></div></td>
+      ${isAdmin()?`<td></td>`:''}
     </tr>`;
   }).join('');
 
