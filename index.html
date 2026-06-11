@@ -939,7 +939,7 @@ function pageMembers(){
   const clanName = (isLeader()||isMember()) ? myClanName() : null;
 
   const statsHtml=`<div class="stats">
-    <div class="sc"><div class="sv">${myMembers.length}</div><div class="sl">${clanName?'TV Hội '+clanName:'Thành viên'}</div></div>
+    <div class="sc"><div class="sv">${myMembers.length+myLeaders.length}</div><div class="sl">${clanName?'TV Hội '+clanName:'Thành viên'}</div></div>
     <div class="sc"><div class="sv">${total}</div><div class="sl">Loài hoa</div></div>
     <div class="sc"><div class="sv">${total?Math.round(myMembers.reduce((a,m)=>a+(S.ticks[m.id]||[]).length,0)/Math.max(myMembers.length,1)):0}</div><div class="sl">TB / người</div></div>
   </div>`;
@@ -1004,7 +1004,7 @@ function manageClans(){
   const rows=S.clans.map(c=>`<tr>
     <td><strong>${esc(c.name)}</strong></td>
     <td style="font-size:.78rem;color:var(--mist)">${S.leaders.filter(l=>l.clanId===c.id).map(l=>esc(l.displayName)).join(', ')||'—'}</td>
-    <td style="font-size:.78rem;color:var(--mist)">${S.members.filter(m=>m.clanId===c.id).length} thành viên</td>
+    <td style="font-size:.78rem;color:var(--mist)">${S.members.filter(m=>m.clanId===c.id).length+S.leaders.filter(l=>l.clanId===c.id).length} thành viên</td>
     <td><button class="ibtn del" onclick="confirmDelClan('${c.id}')">🗑️</button></td>
   </tr>`).join('');
   return `<div class="card" style="margin-bottom:14px">
