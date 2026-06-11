@@ -320,6 +320,16 @@ const ADMIN_PW_HASH = '67cec4b5d00d79ebebcffdb35234c91c785dca6d03235137aecb44d04
 const CLOUDINARY_CLOUD = 'dcjv64yqh';
 const CLOUDINARY_PRESET = 'Hoavien';
 
+// ─── FIREBASE TK2 CONFIG (backup — chỉ ghi) ──────────────────────────────────
+const FIREBASE_CONFIG_TK2 = {
+  apiKey: "AIzaSyAsccZgD8tFhSq_YPLtNSHThi1fikOvk80",
+  authDomain: "hoavien2-d1ecd.firebaseapp.com",
+  projectId: "hoavien2-d1ecd",
+  storageBucket: "hoavien2-d1ecd.firebasestorage.app",
+  messagingSenderId: "562733700961",
+  appId: "1:562733700961:web:d420a6cbe27d83a8245720"
+};
+
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
   {k:'trang',l:'Trắng/Xám', h:'#94a3b8'},
@@ -1601,6 +1611,12 @@ function pageSettings(){
   </div>
   <div class="card">
     <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
+  </div>
+  <div class="card" style="margin-top:14px;border-left:3px solid var(--clan)">
+    <div class="card-title">📦 Sao chép dữ liệu sang Firebase 2</div>
+    <p style="font-size:.82rem;color:var(--mist);margin-bottom:14px">Sao chép toàn bộ hoa, hội, thành viên và tích hoa từ tk1 sang tk2. Thao tác này sẽ <strong>ghi đè</strong> dữ liệu hiện có ở tk2.</p>
+    <div id="copy-log" style="display:none;background:var(--sage);border-radius:10px;padding:12px;font-size:.78rem;color:var(--forest2);margin-bottom:12px;line-height:1.9"></div>
+    <button class="btn" style="background:var(--clan);color:#fff" onclick="copyToTk2()">📤 Bắt đầu sao chép</button>
   </div>`;
 }
 window.saveFirebaseConfig=async function(){
@@ -1626,6 +1642,37 @@ window.doReset=function(){
   db=null;
   S={...S,loaded:false,err:null,flowers:[],clans:[],leaders:[],members:[],ticks:{},page:'flowers',msel:new Set(),proxyMemberId:null,_lastTickSubject:null,tcolor:'all',tq:'',fcolor:'all',fq:''};
   render();
+};
+
+// ─── COPY TO TK2 ─────────────────────────────────────────────────────────────
+window.copyToTk2=async function(){
+  const logEl=document.getElementById('copy-log');
+  const log=(msg)=>{ logEl.style.display=''; logEl.innerHTML+= msg+'<br>'; };
+  log('🔌 Đang kết nối Firebase 2...');
+  let db2;
+  try {
+    const { initializeApp: initApp2, getApps, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getFirestore: getFS2, collection: col2, getDocs: gd2, setDoc: sd2, doc: dc2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const existing = getApps().find(a=>a.name==='hoavien-tk2');
+    const app2 = existing ? getApp('hoavien-tk2') : initApp2(FIREBASE_CONFIG_TK2,'hoavien-tk2');
+    db2 = getFS2(app2);
+    log('✅ Kết nối tk2 thành công');
+
+    const cols = ['flowers','clans','leaders','members','ticks'];
+    for(const colName of cols){
+      log(`📂 Đang sao chép <strong>${colName}</strong>...`);
+      const snap = await gd2(col2(db, colName));
+      let count = 0;
+      for(const d of snap.docs){
+        await sd2(dc2(db2, colName, d.id), d.data());
+        count++;
+      }
+      log(`&nbsp;&nbsp;↳ ${count} bản ghi ✓`);
+    }
+    log('🎉 <strong>Hoàn tất! Toàn bộ dữ liệu đã sao chép sang tk2.</strong>');
+  } catch(e){
+    log('❌ Lỗi: '+e.message);
+  }
 };
 
 // ─── SETUP SCREEN ────────────────────────────────────────────────────────────
