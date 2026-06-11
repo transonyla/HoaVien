@@ -256,6 +256,42 @@ code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;co
   <div id="bar-user-area"></div>
 </div>
 
+<button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang" aria-label="Lên đầu trang">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  <span>Lên đầu</span>
+</button>
+<style>
+#scroll-top-btn{
+  position:fixed;bottom:80px;right:14px;z-index:180;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:10px 11px 8px;
+  background:rgba(26,58,34,.72);
+  color:#e8f5e9;
+  border:1.5px solid rgba(255,255,255,.18);
+  border-radius:14px;
+  cursor:pointer;
+  font-family:'Be Vietnam Pro',sans-serif;
+  font-size:.6rem;font-weight:700;letter-spacing:.03em;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 4px 18px rgba(0,0,0,.22);
+  opacity:0;transform:translateY(10px);
+  transition:opacity .25s ease,transform .25s ease;
+  pointer-events:none;
+  line-height:1;
+}
+#scroll-top-btn.visible{opacity:1;transform:none;pointer-events:auto;}
+#scroll-top-btn:hover{background:rgba(26,58,34,.9);border-color:rgba(255,255,255,.32);}
+#scroll-top-btn:active{transform:scale(.94);}
+</style>
+<script>
+(function(){
+  var btn=document.getElementById('scroll-top-btn');
+  window.addEventListener('scroll',function(){
+    btn.classList.toggle('visible',window.scrollY>220);
+  },{passive:true});
+})();
+</script>
+
 <div class="wrap" id="app"></div>
 
 <script type="module">
