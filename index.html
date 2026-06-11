@@ -301,6 +301,8 @@ import {
   collection, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
   doc, query, where, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+// expose Firebase refs để initFirebase2 dùng được
+const _fbInit=initializeApp, _fbApps=getApps, _fbGetApp=getApp, _fbGetFirestore=getFirestore;
 
 // ─── FIREBASE CONFIG ─────────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
@@ -320,15 +322,11 @@ const ADMIN_PW_HASH = '67cec4b5d00d79ebebcffdb35234c91c785dca6d03235137aecb44d04
 const CLOUDINARY_CLOUD = 'dcjv64yqh';
 const CLOUDINARY_PRESET = 'Hoavien';
 
-// ─── FIREBASE TK2 CONFIG (backup — chỉ ghi) ──────────────────────────────────
-const FIREBASE_CONFIG_TK2 = {
-  apiKey: "AIzaSyAsccZgD8tFhSq_YPLtNSHThi1fikOvk80",
-  authDomain: "hoavien2-d1ecd.firebaseapp.com",
-  projectId: "hoavien2-d1ecd",
-  storageBucket: "hoavien2-d1ecd.firebasestorage.app",
-  messagingSenderId: "562733700961",
-  appId: "1:562733700961:web:d420a6cbe27d83a8245720"
-};
+// ─── FIREBASE TK2 (lưu localStorage, dynamic) ───────────────────────────────
+const CK_FB2      = 'hv5_fb2_config';  // config tk2 lưu localStorage
+const CK_ACTIVE_TK = 'hv5_active_tk'; // 'tk1'|'tk2' — tk nào đang được ĐỌC
+const CK_FB2_LAST  = 'hv5_fb2_last';  // log lần ghi cuối vào tk2 {col,id,ts}
+let db2 = null; // Firestore instance của tk2
 
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
@@ -381,6 +379,22 @@ function loadSavedConfig(){
   if(!raw) return null;
   try { return JSON.parse(raw); } catch(e){ return null; }
 }
+function loadSavedConfig2(){
+  const raw=localStorage.getItem(CK_FB2);
+  if(!raw) return null;
+  try { return JSON.parse(raw); } catch(e){ return null; }
+}
+function initFirebase2(config){
+  try {
+    const existing = _fbApps().find(a=>a.name==='hoavien-tk2');
+    const app2 = existing ? _fbGetApp('hoavien-tk2') : _fbInit(config,'hoavien-tk2');
+    db2 = _fbGetFirestore(app2);
+    return true;
+  } catch(e){ console.error('TK2 init error',e); return false; }
+}
+// active TK helpers
+function getActiveTk(){ return localStorage.getItem(CK_ACTIVE_TK)||'tk1'; }
+function setActiveTk(tk){ localStorage.setItem(CK_ACTIVE_TK,tk); }
 
 // ─── PULSE ───────────────────────────────────────────────────────────────────
 const setPulse = s => {
@@ -544,15 +558,60 @@ function ownershipTagsHtml(fid){
 }
 
 // ─── FIRESTORE CRUD ──────────────────────────────────────────────────────────
+const QUOTA_ERRORS = ['resource-exhausted','RESOURCE_EXHAUSTED','quota'];
+
+function isQuotaError(e){
+  const msg=(e?.message||e?.code||'').toLowerCase();
+  return QUOTA_ERRORS.some(k=>msg.includes(k.toLowerCase()));
+}
+
+// Đọc từ tk đang active (tk1 hoặc tk2 khi tk1 hết quota)
 async function fsGetAll(colName){
-  const snap=await getDocs(collection(db,colName));
+  const activeDb = (getActiveTk()==='tk2' && db2) ? db2 : db;
+  const snap=await getDocs(collection(activeDb,colName));
   return snap.docs.map(d=>({_id:d.id,...d.data()}));
 }
+
+// Ghi đồng thời cả tk1 lẫn tk2 (nếu tk2 đã init)
+// Nếu tk1 hết quota → switch sang tk2, hiện thông báo
 async function fsSet(colName,docId,data){
-  await setDoc(doc(db,colName,docId),data,{merge:true});
+  // ghi vào tk2 ngầm (fire-and-forget, không block)
+  if(db2){
+    setDoc(doc(db2,colName,docId),data,{merge:true})
+      .then(()=>{
+        localStorage.setItem(CK_FB2_LAST, JSON.stringify({col:colName,id:docId,ts:new Date().toISOString()}));
+      })
+      .catch(e=>console.warn('TK2 write warn:',e.message));
+  }
+  // ghi vào tk đang active
+  const activeDb = (getActiveTk()==='tk2' && db2) ? db2 : db;
+  try {
+    await setDoc(doc(activeDb,colName,docId),data,{merge:true});
+  } catch(e){
+    if(isQuotaError(e) && getActiveTk()==='tk1' && db2){
+      // hết quota tk1 → switch sang tk2
+      setActiveTk('tk2');
+      toast('⚠️ Firebase 1 hết hạn mức! Đã chuyển sang Firebase 2','wn');
+      await setDoc(doc(db2,colName,docId),data,{merge:true});
+    } else { throw e; }
+  }
 }
+
 async function fsDel(colName,docId){
-  await deleteDoc(doc(db,colName,docId));
+  // xóa ngầm ở tk2
+  if(db2){
+    deleteDoc(doc(db2,colName,docId)).catch(e=>console.warn('TK2 del warn:',e.message));
+  }
+  const activeDb = (getActiveTk()==='tk2' && db2) ? db2 : db;
+  try {
+    await deleteDoc(doc(activeDb,colName,docId));
+  } catch(e){
+    if(isQuotaError(e) && getActiveTk()==='tk1' && db2){
+      setActiveTk('tk2');
+      toast('⚠️ Firebase 1 hết hạn mức! Đã chuyển sang Firebase 2','wn');
+      await deleteDoc(doc(db2,colName,docId));
+    } else { throw e; }
+  }
 }
 
 // ─── LOAD ALL ────────────────────────────────────────────────────────────────
@@ -566,6 +625,7 @@ async function loadAll(force=false){
     }
   }
   S.loaded=false;S.err=null;setPulse('loading');
+  // Nếu tk1 hết quota khi đọc → tự switch sang tk2
   try {
     const [fl,cl,ld,mb,tk]=await Promise.all([
       fsGetAll('flowers'),
@@ -603,6 +663,12 @@ async function loadAll(force=false){
       }
     }
   } catch(e){
+    if(isQuotaError(e) && getActiveTk()==='tk1' && db2){
+      setActiveTk('tk2');
+      toast('⚠️ Firebase 1 hết hạn mức! Đang chuyển sang Firebase 2...','wn');
+      setTimeout(()=>loadAll(true),500);
+      return;
+    }
     S.err='Không tải được: '+e.message;
     S.loaded=true;setPulse('err');
   }
@@ -1609,14 +1675,25 @@ function pageSettings(){
       ${hasConfig?`<button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>`:''}
     </div>
   </div>
-  <div class="card">
+  <div class="card" style="margin-top:14px">
     <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
+    <span style="font-size:.75rem;color:var(--mist);margin-left:10px">Đang dùng: <strong>${getActiveTk()==='tk2'?'🔵 Firebase 2':'🟢 Firebase 1'}</strong></span>
   </div>
   <div class="card" style="margin-top:14px;border-left:3px solid var(--clan)">
-    <div class="card-title">📦 Sao chép dữ liệu sang Firebase 2</div>
-    <p style="font-size:.82rem;color:var(--mist);margin-bottom:14px">Sao chép toàn bộ hoa, hội, thành viên và tích hoa từ tk1 sang tk2. Thao tác này sẽ <strong>ghi đè</strong> dữ liệu hiện có ở tk2.</p>
-    <div id="copy-log" style="display:none;background:var(--sage);border-radius:10px;padding:12px;font-size:.78rem;color:var(--forest2);margin-bottom:12px;line-height:1.9"></div>
-    <button class="btn" style="background:var(--clan);color:#fff" onclick="copyToTk2()">📤 Bắt đầu sao chép</button>
+    <div class="card-title">📦 Sao chép dữ liệu sang Firebase khác</div>
+    <p style="font-size:.82rem;color:var(--mist);margin-bottom:10px">Paste config JSON của Firebase đích vào ô bên dưới rồi nhấn sao chép. Dữ liệu tk1 sẽ được ghi đè sang Firebase đó.</p>
+    <textarea class="fi fb-textarea" id="copy-target-cfg" placeholder='{"apiKey":"...","projectId":"..."}'></textarea>
+    <div id="copy-log" style="display:none;background:var(--sage);border-radius:10px;padding:12px;font-size:.78rem;color:var(--forest2);margin:10px 0;line-height:1.9"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button class="btn" style="background:var(--clan);color:#fff" onclick="copyToTarget()">📤 Bắt đầu sao chép</button>
+      <button class="btn btn-g btn-sm" onclick="saveCopyTargetAsTk2()">💾 Lưu làm Firebase 2</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px;border-left:3px solid var(--leaf)">
+    <div class="card-title">🔍 Kiểm tra Firebase 2</div>
+    <p style="font-size:.82rem;color:var(--mist);margin-bottom:10px">${db2?'Firebase 2 đã kết nối ✅':'⚠️ Firebase 2 chưa kết nối — lưu config ở trên trước.'}</p>
+    ${db2?`<button class="btn btn-g btn-sm" onclick="checkTk2()">🔍 Xem lần ghi cuối vào Firebase 2</button>
+    <div id="tk2-check" style="margin-top:10px;font-size:.8rem;color:var(--forest2)"></div>`:''}
   </div>`;
 }
 window.saveFirebaseConfig=async function(){
@@ -1644,35 +1721,70 @@ window.doReset=function(){
   render();
 };
 
-// ─── COPY TO TK2 ─────────────────────────────────────────────────────────────
-window.copyToTk2=async function(){
-  const logEl=document.getElementById('copy-log');
-  const log=(msg)=>{ logEl.style.display=''; logEl.innerHTML+= msg+'<br>'; };
-  log('🔌 Đang kết nối Firebase 2...');
-  let db2;
-  try {
-    const { initializeApp: initApp2, getApps, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-    const { getFirestore: getFS2, collection: col2, getDocs: gd2, setDoc: sd2, doc: dc2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const existing = getApps().find(a=>a.name==='hoavien-tk2');
-    const app2 = existing ? getApp('hoavien-tk2') : initApp2(FIREBASE_CONFIG_TK2,'hoavien-tk2');
-    db2 = getFS2(app2);
-    log('✅ Kết nối tk2 thành công');
-
-    const cols = ['flowers','clans','leaders','members','ticks'];
-    for(const colName of cols){
-      log(`📂 Đang sao chép <strong>${colName}</strong>...`);
-      const snap = await gd2(col2(db, colName));
-      let count = 0;
-      for(const d of snap.docs){
-        await sd2(dc2(db2, colName, d.id), d.data());
-        count++;
-      }
-      log(`&nbsp;&nbsp;↳ ${count} bản ghi ✓`);
+// ─── COPY TO TARGET FIREBASE ────────────────────────────────────────────────
+async function doCopyToDb(targetDb, logEl){
+  const log=(msg)=>{ logEl.style.display=''; logEl.innerHTML+=msg+'<br>'; };
+  const cols=['flowers','clans','leaders','members','ticks'];
+  for(const colName of cols){
+    log(`📂 Đang sao chép <strong>${colName}</strong>...`);
+    const snap=await getDocs(collection(db,colName));
+    let count=0;
+    for(const d of snap.docs){
+      await setDoc(doc(targetDb,colName,d.id),d.data());
+      count++;
     }
-    log('🎉 <strong>Hoàn tất! Toàn bộ dữ liệu đã sao chép sang tk2.</strong>');
-  } catch(e){
-    log('❌ Lỗi: '+e.message);
+    log(`&nbsp;&nbsp;↳ ${count} bản ghi ✓`);
   }
+  log('🎉 <strong>Hoàn tất!</strong>');
+}
+
+window.copyToTarget=async function(){
+  const logEl=document.getElementById('copy-log');
+  logEl.innerHTML='';
+  const log=(msg)=>{ logEl.style.display=''; logEl.innerHTML+=msg+'<br>'; };
+  const raw=document.getElementById('copy-target-cfg')?.value.trim();
+  if(!raw){toast('Paste config JSON vào!','wn');return;}
+  let cfg;
+  try{cfg=JSON.parse(raw);}catch(e){toast('JSON không hợp lệ','er');return;}
+  if(!cfg.projectId){toast('Thiếu projectId!','wn');return;}
+  log('🔌 Đang kết nối Firebase đích...');
+  try {
+    const existing=_fbApps().find(a=>a.name==='hoavien-copy-target');
+    const appT=existing?_fbGetApp('hoavien-copy-target'):_fbInit(cfg,'hoavien-copy-target');
+    const dbT=_fbGetFirestore(appT);
+    log('✅ Kết nối thành công → <strong>'+cfg.projectId+'</strong>');
+    await doCopyToDb(dbT,logEl);
+  } catch(e){ log('❌ Lỗi: '+e.message); }
+};
+
+window.saveCopyTargetAsTk2=function(){
+  const raw=document.getElementById('copy-target-cfg')?.value.trim();
+  if(!raw){toast('Paste config JSON vào trước!','wn');return;}
+  let cfg;
+  try{cfg=JSON.parse(raw);}catch(e){toast('JSON không hợp lệ','er');return;}
+  if(!cfg.projectId){toast('Thiếu projectId!','wn');return;}
+  localStorage.setItem(CK_FB2,JSON.stringify(cfg));
+  const ok=initFirebase2(cfg);
+  if(ok){ toast('✅ Đã lưu và kết nối Firebase 2!'); render(); }
+  else { toast('Lưu OK nhưng kết nối thất bại','er'); }
+};
+
+window.checkTk2=function(){
+  const el=document.getElementById('tk2-check');
+  if(!el) return;
+  const raw=localStorage.getItem(CK_FB2_LAST);
+  if(!raw){
+    el.innerHTML='<em style="color:var(--mist)">Chưa có lần ghi nào được ghi nhận.</em>';
+    return;
+  }
+  try {
+    const {col,id,ts}=JSON.parse(raw);
+    el.innerHTML=`<div style="background:var(--sage);padding:10px;border-radius:8px">
+      📋 <strong>Collection:</strong> ${col}<br>
+      🆔 <strong>Document ID:</strong> ${id}<br>
+      🕐 <strong>Thời gian:</strong> ${new Date(ts).toLocaleString('vi-VN')}
+    </div>`;
+  } catch(e){ el.innerHTML='Lỗi đọc log'; }
 };
 
 // ─── SETUP SCREEN ────────────────────────────────────────────────────────────
@@ -1719,6 +1831,10 @@ function renderErr(){
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function init(){
+  // init tk2 nếu đã lưu config
+  const cfg2=loadSavedConfig2();
+  if(cfg2) initFirebase2(cfg2);
+
   const cfg=FIREBASE_CONFIG||loadSavedConfig();
   if(cfg){
     const ok=initFirebase(cfg);
