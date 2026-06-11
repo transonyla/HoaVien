@@ -322,7 +322,16 @@ const ADMIN_PW_HASH = '67cec4b5d00d79ebebcffdb35234c91c785dca6d03235137aecb44d04
 const CLOUDINARY_CLOUD = 'dcjv64yqh';
 const CLOUDINARY_PRESET = 'Hoavien';
 
-// ─── (đã gỡ Firebase 2 song song) ─────────────────────────────────────────
+// ─── FIREBASE 2 CONFIG (db2 — ghi song song) ────────────────────────────────
+const FIREBASE_CONFIG_DB2 = {
+  "apiKey": "AIzaSyAsccZgD8tFhSq_YPLtNSHThi1fikOvk80",
+  "authDomain": "hoavien2-d1ecd.firebaseapp.com",
+  "projectId": "hoavien2-d1ecd",
+  "storageBucket": "hoavien2-d1ecd.firebasestorage.app",
+  "messagingSenderId": "562733700961",
+  "appId": "1:562733700961:web:d420a6cbe27d83a8245720",
+  "measurementId": "G-DSKXE8JC1P"
+};
 
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 const COLS = [
@@ -338,6 +347,7 @@ const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let db = null;
+let db2 = null; // Firebase 2 — ghi song song
 let S = {
   flowers:[],
   clans:[],      // [{id,name}]
@@ -367,6 +377,12 @@ function initFirebase(config){
     const app = existing ? getApp('hoavien') : initializeApp(config,'hoavien');
     db = getFirestore(app);
     enableIndexedDbPersistence(db).catch(()=>{});
+    // ── Khởi tạo db2 song song ──────────────────────────────────────────────
+    try {
+      const existing2 = getApps().find(a=>a.name==='hoavien2');
+      const app2 = existing2 ? getApp('hoavien2') : initializeApp(FIREBASE_CONFIG_DB2,'hoavien2');
+      db2 = getFirestore(app2);
+    } catch(e2){ console.warn('db2 init failed:',e2); db2=null; }
     return true;
   } catch(e){ console.error(e); return false; }
 }
@@ -545,14 +561,18 @@ async function fsGetAll(colName){
   return snap.docs.map(d=>({_id:d.id,...d.data()}));
 }
 
-// Ghi vào db1 (Firebase 1)
+// Ghi vào db1 (và db2 nếu có) song song
 async function fsSet(colName,docId,data){
-  await setDoc(doc(db,colName,docId),data,{merge:true});
+  const p1=setDoc(doc(db,colName,docId),data,{merge:true});
+  const p2=db2?setDoc(doc(db2,colName,docId),data,{merge:true}):Promise.resolve();
+  await Promise.all([p1,p2]);
 }
 
-// Xóa khỏi db1
+// Xóa khỏi db1 (và db2 nếu có) song song
 async function fsDel(colName,docId){
-  await deleteDoc(doc(db,colName,docId));
+  const p1=deleteDoc(doc(db,colName,docId));
+  const p2=db2?deleteDoc(doc(db2,colName,docId)):Promise.resolve();
+  await Promise.all([p1,p2]);
 }
 
 // ─── LOAD ALL ────────────────────────────────────────────────────────────────
@@ -1644,6 +1664,7 @@ window.doReset=function(){
   closeModal();
   localStorage.removeItem(CK_FB);
   db=null;
+  db2=null;
   S={...S,loaded:false,err:null,flowers:[],clans:[],leaders:[],members:[],ticks:{},page:'flowers',msel:new Set(),proxyMemberId:null,_lastTickSubject:null,tcolor:'all',tq:'',fcolor:'all',fq:''};
   render();
 };
