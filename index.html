@@ -348,6 +348,26 @@ const col = k => CM[k]||{k:'trang',l:k||'?',h:'#94a3b8'};
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let db = null;
 let db2 = null; // Firebase 2 — ghi song song
+
+// ─── SMART READ BALANCER ──────────────────────────────────────────────────────
+// Theo dõi db nào đang được dùng để ĐỌC (luân phiên mỗi lần loadAll)
+let _readDbIndex = 0; // 0 = db1, 1 = db2
+// Trạng thái kết nối thực tế của từng db (dùng cho UI)
+let _dbStatus = {
+  db1: { read: false, write: false, err: null },
+  db2: { read: false, write: false, err: null },
+};
+function getReadDb(){
+  // Nếu db2 chưa sẵn sàng → luôn dùng db1
+  if(!db2) return { readDb: db, label: 'DB1' };
+  const useDb2 = _readDbIndex % 2 === 1;
+  return { readDb: useDb2 ? db2 : db, label: useDb2 ? 'DB2' : 'DB1' };
+}
+function updateDbStatusUI(){
+  const el = document.getElementById('db-status-panel');
+  if(!el) return;
+  el.innerHTML = buildDbStatusHtml();
+}
 let S = {
   flowers:[],
   clans:[],      // [{id,name}]
@@ -362,6 +382,7 @@ let S = {
   _editFlowerId:null, _editColor:'trang',
   proxyMemberId: null,
   _lastTickSubject: null,
+  _readDbLabel: 'DB1', // DB đang được đọc hiện tại
 };
 
 // restore session
@@ -555,23 +576,39 @@ function ownershipTagsHtml(fid){
 
 // ─── FIRESTORE CRUD ──────────────────────────────────────────────────────────
 
-// Đọc luôn từ db1 (Firebase 1)
-async function fsGetAll(colName){
-  const snap=await getDocs(collection(db,colName));
+// Đọc từ readDb được truyền vào (DB1 hoặc DB2 luân phiên)
+async function fsGetAll(colName, readDb){
+  const snap=await getDocs(collection(readDb,colName));
   return snap.docs.map(d=>({_id:d.id,...d.data()}));
 }
 
-// Ghi vào db1 (và db2 nếu có) song song
+// Ghi vào db1 VÀ db2 song song (luôn cả 2 để đồng bộ)
 async function fsSet(colName,docId,data){
-  const p1=setDoc(doc(db,colName,docId),data,{merge:true});
-  const p2=db2?setDoc(doc(db2,colName,docId),data,{merge:true}):Promise.resolve();
+  _dbStatus.db1.write=false; _dbStatus.db1.err=null;
+  _dbStatus.db2.write=false; _dbStatus.db2.err=null;
+  const p1=setDoc(doc(db,colName,docId),data,{merge:true})
+    .then(()=>{ _dbStatus.db1.write=true; updateDbStatusUI(); })
+    .catch(e=>{ _dbStatus.db1.err=e.message; updateDbStatusUI(); throw e; });
+  const p2=db2
+    ? setDoc(doc(db2,colName,docId),data,{merge:true})
+        .then(()=>{ _dbStatus.db2.write=true; updateDbStatusUI(); })
+        .catch(e=>{ _dbStatus.db2.err=e.message; updateDbStatusUI(); })
+    : Promise.resolve();
   await Promise.all([p1,p2]);
 }
 
-// Xóa khỏi db1 (và db2 nếu có) song song
+// Xóa khỏi db1 VÀ db2 song song (luôn cả 2 để đồng bộ)
 async function fsDel(colName,docId){
-  const p1=deleteDoc(doc(db,colName,docId));
-  const p2=db2?deleteDoc(doc(db2,colName,docId)):Promise.resolve();
+  _dbStatus.db1.write=false; _dbStatus.db1.err=null;
+  _dbStatus.db2.write=false; _dbStatus.db2.err=null;
+  const p1=deleteDoc(doc(db,colName,docId))
+    .then(()=>{ _dbStatus.db1.write=true; updateDbStatusUI(); })
+    .catch(e=>{ _dbStatus.db1.err=e.message; updateDbStatusUI(); throw e; });
+  const p2=db2
+    ? deleteDoc(doc(db2,colName,docId))
+        .then(()=>{ _dbStatus.db2.write=true; updateDbStatusUI(); })
+        .catch(e=>{ _dbStatus.db2.err=e.message; updateDbStatusUI(); })
+    : Promise.resolve();
   await Promise.all([p1,p2]);
 }
 
@@ -586,14 +623,20 @@ async function loadAll(force=false){
     }
   }
   S.loaded=false;S.err=null;setPulse('loading');
-  // Nếu tk1 hết quota khi đọc → tự switch sang tk2
+
+  // ── Chọn DB đọc luân phiên ─────────────────────────────────────────────────
+  const { readDb, label: readLabel } = getReadDb();
+  _readDbIndex++; // tăng index cho lần sau
+  S._readDbLabel = readLabel; // lưu vào state để UI hiển thị
+  updateDbStatusUI();
+
   try {
     const [fl,cl,ld,mb,tk]=await Promise.all([
-      fsGetAll('flowers'),
-      fsGetAll('clans'),
-      fsGetAll('leaders'),
-      fsGetAll('members'),
-      fsGetAll('ticks'),
+      fsGetAll('flowers', readDb),
+      fsGetAll('clans', readDb),
+      fsGetAll('leaders', readDb),
+      fsGetAll('members', readDb),
+      fsGetAll('ticks', readDb),
     ]);
     S.flowers=fl.filter(r=>r.name).map(r=>({
       id:r._id,name:r.name,color:r.color||'trang',
@@ -1615,12 +1658,72 @@ window.doDelMember=async function(id){
   render();
 };
 
+// ─── DB STATUS PANEL HTML ────────────────────────────────────────────────────
+function buildDbStatusHtml(){
+  const r = S._readDbLabel || 'DB1';
+  const db1ok = _dbStatus.db1.write;
+  const db2ok = _dbStatus.db2.write;
+  const db1err = _dbStatus.db1.err;
+  const db2err = _dbStatus.db2.err;
+  const hasDb2 = !!db2;
+
+  const readBar = (label, active) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:1.5px solid ${active?'#22c55e':'var(--bd)'};background:${active?'#f0fdf4':'var(--sage)'}">
+      <div style="width:10px;height:10px;border-radius:50%;background:${active?'#22c55e':'var(--haze)'};flex-shrink:0;${active?'box-shadow:0 0 0 3px #bbf7d0':''}"></div>
+      <div>
+        <div style="font-size:.8rem;font-weight:700;color:${active?'#15803d':'var(--mist)'}">📖 Đọc — ${label}</div>
+        <div style="font-size:.7rem;color:${active?'#166534':'var(--mist)'}">${active?'Đang đọc dữ liệu từ '+label:'Không hoạt động'}</div>
+      </div>
+      ${active?'<span style="margin-left:auto;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;background:#22c55e;color:#fff">ACTIVE</span>':''}
+    </div>`;
+
+  const writeBar = (label, ok, err, available) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:1.5px solid ${!available?'var(--bd)':err?'#fca5a5':ok?'#93c5fd':'var(--bd)'};background:${!available?'#f9f9f9':err?'#fef2f2':ok?'#eff6ff':'var(--sage)'}">
+      <div style="width:10px;height:10px;border-radius:50%;background:${!available?'#d1d5db':err?'#ef4444':ok?'#3b82f6':'var(--haze)'};flex-shrink:0;${ok&&available?'box-shadow:0 0 0 3px #bfdbfe':''}"></div>
+      <div>
+        <div style="font-size:.8rem;font-weight:700;color:${!available?'var(--mist)':err?'#dc2626':ok?'#1d4ed8':'var(--mist)'}">✏️ Ghi/Xóa — ${label}</div>
+        <div style="font-size:.7rem;color:${!available?'var(--haze)':err?'#dc2626':ok?'#1e40af':'var(--mist)'}">
+          ${!available?'Chưa cấu hình DB2':err?'❌ Lỗi: '+err:ok?'✅ Ghi thành công':'Chờ thao tác ghi...'}
+        </div>
+      </div>
+      ${ok&&available?'<span style="margin-left:auto;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;background:#3b82f6;color:#fff">OK</span>':''}
+      ${err&&available?'<span style="margin-left:auto;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;background:#ef4444;color:#fff">ERR</span>':''}
+    </div>`;
+
+  return `
+    <div style="margin-bottom:12px">
+      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📖 Trạng thái Đọc (luân phiên DB1 ↔ DB2)</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${readBar('DB1', r==='DB1')}
+        ${readBar('DB2', r==='DB2')}
+      </div>
+    </div>
+    <div style="margin-bottom:4px">
+      <div style="font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✏️ Trạng thái Ghi/Xóa (luôn cả 2 DB)</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${writeBar('DB1', db1ok, db1err, true)}
+        ${writeBar('DB2', db2ok, db2err, hasDb2)}
+      </div>
+    </div>
+    <div style="font-size:.71rem;color:var(--mist);margin-top:10px;line-height:1.7">
+      ℹ️ Mỗi lần tải dữ liệu sẽ luân phiên đọc DB1 → DB2 → DB1... Ghi & Xóa luôn đồng bộ cả 2 DB để đảm bảo nhất quán.
+    </div>`;
+}
+
 // ─── SETTINGS PAGE (ADMIN ONLY) ──────────────────────────────────────────────
 function pageSettings(){
   if(!isAdmin()) return `<div class="empty"><div class="empty-icon">🔒</div>Chỉ Admin mới truy cập được</div>`;
   const hasConfig=!!loadSavedConfig();
-  return `<div class="card" style="margin-bottom:14px">
-    <div class="card-title">🔥 Firebase Config</div>
+  return `
+  <div class="card" style="margin-bottom:14px;border-left:3px solid #22c55e">
+    <div class="card-title">🗄️ Trạng thái Kết nối Database</div>
+    <div id="db-status-panel">${buildDbStatusHtml()}</div>
+    <div style="margin-top:12px">
+      <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại & Cập nhật trạng thái</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">🔥 Firebase Config (DB1 — Chính)</div>
     ${hasConfig
       ?`<p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Đang kết nối Firebase. Paste config mới để thay thế.</p>`
       :`<p style="font-size:.82rem;color:var(--mist);margin-bottom:12px">Paste Firebase config JSON vào đây.</p>`}
@@ -1629,9 +1732,6 @@ function pageSettings(){
       <button class="btn btn-g" onclick="saveFirebaseConfig()">💾 Lưu & Kết nối</button>
       ${hasConfig?`<button class="btn btn-r btn-sm" onclick="confirmReset()">🔌 Ngắt kết nối</button>`:''}
     </div>
-  </div>
-  <div class="card" style="margin-top:14px">
-    <button class="btn btn-g btn-sm" onclick="retry()">🔄 Tải lại dữ liệu</button>
   </div>
   <div class="card" style="margin-top:14px;border-left:3px solid var(--clan)">
     <div class="card-title">📦 Sao chép dữ liệu sang Firebase khác</div>
