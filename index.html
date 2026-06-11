@@ -426,6 +426,8 @@ window.setLoginTab=function(t){S.loginTab=t;render();};
 window.setFcolor=function(v){
   // Flowers page: dùng S.fcolor
   S.fcolor=v;
+  const cfbar=document.getElementById('flower-cfbar');
+  if(cfbar){cfbar.innerHTML=buildFlowerCfbarInner();}
   const flowerGrid=document.getElementById('flower-grid');
   if(flowerGrid){flowerGrid.innerHTML=buildFlowerGrid();return;}
   render();
@@ -637,6 +639,9 @@ window.goto=function(p){
     S.tcolor='all'; S.tq='';
     S._lastTickSubject=null; // force msel reload khi quay lại tick page
   }
+  if(S.page==='flowers' && p!=='flowers'){
+    S.fcolor='all'; S.fq=''; // reset bộ lọc màu khi rời tab Hoa
+  }
   S.page=p;
   render();
 };
@@ -782,28 +787,8 @@ function pageFlowers(){
     return flowerMembers[fid]; // admin sees all
   };
 
-  // Pre-compute owned counts per color for member/leader
-  const getOwnedCount = (colorKey) => {
-    if(!isMember()&&!isLeader()) return null;
-    const cid=myClanId();
-    const allIds=[
-      ...S.members.filter(m=>m.clanId===cid).map(m=>m.id),
-      ...S.leaders.filter(l=>l.clanId===cid).map(l=>l.id)
-    ];
-    const flowers = colorKey==='all' ? S.flowers : S.flowers.filter(f=>f.color===colorKey);
-    return flowers.filter(f=>allIds.some(id=>(S.ticks[id]||[]).includes(f.id))).length;
-  };
-  const totalAll=S.flowers.length;
-  const ownedAll=isMember()||isLeader()?getOwnedCount('all'):null;
-  const colorFilter=`<div class="cfbar">
-    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${ownedAll!==null?ownedAll+'/'+totalAll:totalAll})</button>
-    ${COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
-      const total=S.flowers.filter(f=>f.color===c.k).length;
-      const owned=isMember()||isLeader()?getOwnedCount(c.k):null;
-      const on=S.fcolor===c.k;
-      return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l} (${owned!==null?owned+'/'+total:total})</button>`;
-    }).join('')}
-  </div>`;
+  // Pre-compute owned counts per color for member/leader — now handled by buildFlowerCfbarInner()
+  const colorFilter=`<div class="cfbar" id="flower-cfbar">${buildFlowerCfbarInner()}</div>`;
 
   const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="fq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="setFq(this.value)"></div>`;
 
@@ -842,6 +827,31 @@ function pageFlowers(){
   }).join('');
 
   return colorFilter+searchBar+`<div id="flower-grid">${html}</div>`;
+}
+
+// ─── BUILD FLOWER CFBAR (reusable for live color filter) ────────────────────
+function buildFlowerCfbarInner(){
+  const getOwnedCount = (colorKey) => {
+    if(!isMember()&&!isLeader()) return null;
+    const cid=myClanId();
+    const allIds=[
+      ...S.members.filter(m=>m.clanId===cid).map(m=>m.id),
+      ...S.leaders.filter(l=>l.clanId===cid).map(l=>l.id)
+    ];
+    const flowers = colorKey==='all' ? S.flowers : S.flowers.filter(f=>f.color===colorKey);
+    return flowers.filter(f=>allIds.some(id=>(S.ticks[id]||[]).includes(f.id))).length;
+  };
+  const totalAll=S.flowers.length;
+  const ownedAll=isMember()||isLeader()?getOwnedCount('all'):null;
+  const allOn=S.fcolor==='all';
+  const allBtn=`<button class="ctab ${allOn?'on':''}" onclick="setFcolor('all')" style="${allOn?'border-color:var(--forest);color:var(--forest)':''}">Tất cả (${ownedAll!==null?ownedAll+'/'+totalAll:totalAll})</button>`;
+  const colorBtns=COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
+    const total=S.flowers.filter(f=>f.color===c.k).length;
+    const owned=isMember()||isLeader()?getOwnedCount(c.k):null;
+    const on=S.fcolor===c.k;
+    return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l} (${owned!==null?owned+'/'+total:total})</button>`;
+  }).join('');
+  return allBtn+colorBtns;
 }
 
 // ─── BUILD FLOWER GRID (reusable for live search) ───────────────────────────
@@ -1079,13 +1089,14 @@ function pageMembers(){
         <td><div class="mb-name-link" style="font-weight:700" onclick="openMemberFlowers('${m.id}','member')">${esc(m.displayName)}</div>${m.alias||m.year?`<div style="font-size:.74rem;color:var(--mist)">${[m.alias,m.year].filter(Boolean).join(' · ')}</div>`:''}<div style="font-size:.72rem;color:var(--haze)">@${esc(m.username)}</div></td>
         ${isAdmin()?`<td><span class="clan-tag">${clan?'🏅 '+esc(clan.name):'—'}</span></td>`:''}
         <td><div class="mbar-w"><div class="mbar"><div class="mbar-f" style="width:${pct}%"></div></div><span class="mlbl">${n}/${total}</span></div></td>
+        ${isAdmin()?`<td><button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button></td>`:''}
       </tr>`;
   }).join('');
 
   const allRows=leaderRows+memberRows;
   const tableHtml=(!allRows)
     ?`<div class="empty"><div class="empty-icon">👥</div>Chưa có thành viên</div>`
-    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th>${isAdmin()?'<th>Hội</th>':''}<th>Sở hữu</th></tr></thead><tbody>
+    :`<div style="overflow-x:auto"><table class="mtbl"><thead><tr><th>#</th><th>Thành viên</th>${isAdmin()?'<th>Hội</th>':''}<th>Sở hữu</th>${isAdmin()?'<th></th>':''}</tr></thead><tbody>
     ${allRows}</tbody></table></div>`;
   return statsHtml+`<div class="card">${tableHtml}</div>`;
 }
@@ -1156,14 +1167,30 @@ window.doAddClan=async function(){
 };
 window.confirmDelClan=function(id){
   const c=S.clans.find(x=>x.id===id);
-  openModal('⚠️ Xóa Hội',`Xóa Hội <b>${esc(c?.name||id)}</b>? Hội trưởng và thành viên thuộc hội này KHÔNG bị xóa nhưng sẽ không còn thuộc hội nào.`,
+  const affectedLeaders=S.leaders.filter(l=>l.clanId===id);
+  const affectedMembers=S.members.filter(m=>m.clanId===id);
+  const warnParts=[];
+  if(affectedLeaders.length>0) warnParts.push(`${affectedLeaders.length} hội trưởng`);
+  if(affectedMembers.length>0) warnParts.push(`${affectedMembers.length} thành viên`);
+  const warnTxt=warnParts.length>0
+    ? `<br><span style="color:#e65100;font-size:.82rem">⚠️ ${warnParts.join(' và ')} sẽ bị xóa liên kết hội (tài khoản vẫn còn, chỉ mất clanId).</span>`
+    : '';
+  openModal('⚠️ Xóa Hội',`Xóa Hội <b>${esc(c?.name||id)}</b>?${warnTxt}`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelClan('${id}')">Xóa</button>`);
 };
 window.doDelClan=async function(id){
   closeModal();setPulse('loading');
   try {
-    await fsDel('clans',id);
+    const affectedLeaders=S.leaders.filter(l=>l.clanId===id);
+    const affectedMembers=S.members.filter(m=>m.clanId===id);
+    const clearPromises=[
+      ...affectedLeaders.map(l=>fsSet('leaders',l.id,{clanId:''})),
+      ...affectedMembers.map(m=>fsSet('members',m.id,{clanId:'',leaderId:''})),
+    ];
+    await Promise.all([fsDel('clans',id),...clearPromises]);
     S.clans=S.clans.filter(c=>c.id!==id);
+    affectedLeaders.forEach(l=>{l.clanId='';});
+    affectedMembers.forEach(m=>{m.clanId='';m.leaderId='';});
     toast('Đã xóa Hội');
   } catch(e){toast('Lỗi: '+e.message,'er');}
   setPulse('');
@@ -1225,15 +1252,23 @@ window.doAddLeader=async function(){
 };
 window.confirmDelLeader=function(id){
   const l=S.leaders.find(x=>x.id===id);
-  openModal('⚠️ Xóa Hội trưởng',`Xóa hội trưởng <b>${esc(l?.displayName||id)}</b>?`,
+  const affectedMembers=S.members.filter(m=>m.leaderId===id);
+  const warnTxt=affectedMembers.length>0
+    ? ` <br><span style="color:#e65100;font-size:.82rem">⚠️ ${affectedMembers.length} thành viên đang thuộc hội trưởng này sẽ bị xóa liên kết leaderId (vẫn còn tài khoản, chỉ mất liên kết).</span>`
+    : '';
+  openModal('⚠️ Xóa Hội trưởng',`Xóa hội trưởng <b>${esc(l?.displayName||id)}</b>?${warnTxt}`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-r" onclick="doDelLeader('${id}')">Xóa</button>`);
 };
 window.doDelLeader=async function(id){
   closeModal();setPulse('loading');
   try {
-    await fsDel('leaders',id);
+    // Clear leaderId of members linked to this leader
+    const affectedMembers=S.members.filter(m=>m.leaderId===id);
+    const clearPromises=affectedMembers.map(m=>fsSet('members',m.id,{leaderId:''}));
+    await Promise.all([fsDel('leaders',id),fsDel('ticks',id),...clearPromises]);
     S.leaders=S.leaders.filter(l=>l.id!==id);
     delete S.ticks[id];
+    affectedMembers.forEach(m=>{m.leaderId='';});
     toast('Đã xóa hội trưởng');
   }
   catch(e){toast('Lỗi: '+e.message,'er');}
