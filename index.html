@@ -305,12 +305,13 @@ let S = {
   members:[],    // [{id,username,password,clanId,leaderId,displayName,alias,year}]
   ticks:{},      // {memberId:[flowerIds]}
   loaded:false, err:null,
-  page:'flowers', fcolor:'all', fq:'',
+  page:'flowers', fcolor:'all', tcolor:'all', fq:'', tq:'',
   msel:new Set(),
   session: null, // {role, id, clanId, displayName}
   loginTab: 'member',
   _editFlowerId:null, _editColor:'trang',
-  proxyMemberId: null, // leader đang tick thay thành viên nào (null = tick cho chính mình)
+  proxyMemberId: null,
+  _lastTickSubject: null,
 };
 
 // restore session
@@ -423,18 +424,19 @@ window.closeMemberFlowers=function(){
 // ─── EXPOSED STATE SETTERS (needed by inline onclick in ES module) ────────────
 window.setLoginTab=function(t){S.loginTab=t;render();};
 window.setFcolor=function(v){
+  // Flowers page: dùng S.fcolor
   S.fcolor=v;
-  // Partial update nếu đang ở tick page hoặc flowers page
-  const tickGrid=document.getElementById('tick-grid');
-  if(tickGrid){
-    // Update cả cfbar (để highlight đúng nút) + grid
-    const cfbar=document.getElementById('tick-cfbar');
-    if(cfbar) cfbar.innerHTML=buildTickCfbar();
-    tickGrid.innerHTML=buildTickGrid();
-    return;
-  }
   const flowerGrid=document.getElementById('flower-grid');
   if(flowerGrid){flowerGrid.innerHTML=buildFlowerGrid();return;}
+  render();
+};
+window.setTcolor=function(v){
+  // Tick page: dùng S.tcolor riêng — không ảnh hưởng tab Hoa
+  S.tcolor=v;
+  const cfbar=document.getElementById('tick-cfbar');
+  if(cfbar) cfbar.innerHTML=buildTickCfbarInner();
+  const tickGrid=document.getElementById('tick-grid');
+  if(tickGrid){tickGrid.innerHTML=buildTickGrid();return;}
   render();
 };
 let _fqTimer=null;
@@ -442,12 +444,18 @@ window.setFq=function(v){
   S.fq=v;
   clearTimeout(_fqTimer);
   _fqTimer=setTimeout(()=>{
-    // Partial update: chỉ update phần grid, không rebuild toàn DOM → giữ focus input
-    const tickGrid=document.getElementById('tick-grid');
-    if(tickGrid){tickGrid.innerHTML=buildTickGrid();return;}
     const flowerGrid=document.getElementById('flower-grid');
     if(flowerGrid){flowerGrid.innerHTML=buildFlowerGrid();return;}
     render();
+  },160);
+};
+let _tqTimer=null;
+window.setTq=function(v){
+  S.tq=v;
+  clearTimeout(_tqTimer);
+  _tqTimer=setTimeout(()=>{
+    const tickGrid=document.getElementById('tick-grid');
+    if(tickGrid){tickGrid.innerHTML=buildTickGrid();}
   },160);
 };
 
@@ -576,20 +584,7 @@ function render(){
   const app=document.getElementById('app');
   if(!app) return;
 
-  // savebar
-  const sb=document.getElementById('savebar');
-  if(S.page==='tick'&&(isMember()||isLeader())){
-    sb.classList.add('on');
-    document.getElementById('sbc').textContent=S.msel.size;
-    const sbtnLabel=document.getElementById('sbtn');
-    if(sbtnLabel && isLeader() && S.proxyMemberId){
-      const m=S.members.find(x=>x.id===S.proxyMemberId);
-      document.querySelector('#savebar span').innerHTML=`Lưu cho <strong style="color:#fff">${esc(m?.displayName||'thành viên')}</strong>: <strong style="color:#fff">${S.msel.size}</strong> hoa`;
-    } else {
-      document.querySelector('#savebar span').innerHTML=`Đã chọn <strong id="sbc" style="color:#fff">${S.msel.size}</strong> hoa`;
-    }
-  }
-  else sb.classList.remove('on');
+  // savebar — handled after app.innerHTML below
 
   // header user area
   renderBarUser();
@@ -600,6 +595,23 @@ function render(){
   if(!S.session){app.innerHTML=renderLogin();return;}
 
   app.innerHTML=renderNav()+renderPage();
+
+  // savebar — cập nhật SAU khi renderPage() đã resolve msel (quan trọng: phải sau app.innerHTML)
+  const sb=document.getElementById('savebar');
+  if(S.page==='tick'&&(isMember()||isLeader())){
+    sb.classList.add('on');
+    const sbSpan=document.querySelector('#savebar span');
+    if(sbSpan){
+      if(isLeader()&&S.proxyMemberId){
+        const m=S.members.find(x=>x.id===S.proxyMemberId);
+        sbSpan.innerHTML=`Lưu cho <strong style="color:#fff">${esc(m?.displayName||'thành viên')}</strong>: <strong style="color:#fff" id="sbc">${S.msel.size}</strong> hoa`;
+      } else {
+        sbSpan.innerHTML=`Đã chọn <strong style="color:#fff" id="sbc">${S.msel.size}</strong> hoa`;
+      }
+    }
+  } else {
+    sb.classList.remove('on');
+  }
 }
 
 function renderBarUser(){
@@ -620,7 +632,14 @@ function renderNav(){
   if(isAdmin()) tabs.push({k:'settings',l:'🔧 Cài đặt'});
   return `<div class="nav">${tabs.map(t=>`<button class="nvb ${S.page===t.k?'on':''}" onclick="goto('${t.k}')">${t.l}</button>`).join('')}</div>`;
 }
-window.goto=function(p){S.page=p;render();}
+window.goto=function(p){
+  if(S.page==='tick' && p!=='tick'){
+    S.tcolor='all'; S.tq='';
+    S._lastTickSubject=null; // force msel reload khi quay lại tick page
+  }
+  S.page=p;
+  render();
+};
 
 function renderPage(){
   if(S.page==='flowers') return pageFlowers();
@@ -707,6 +726,8 @@ window.doLogout=function(){
   S.loginTab='member';
   S.proxyMemberId=null;
   S._lastTickSubject=null;
+  S.tcolor='all'; S.tq='';
+  S.fcolor='all'; S.fq='';
   toast('Đã đăng xuất');
   render();
 };
@@ -867,16 +888,20 @@ function buildFlowerGrid(){
 }
 
 // ─── TICK PAGE HELPERS (partial-update safe) ──────────────────────────────────
-function buildTickCfbar(){
-  return COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
-    const on=S.fcolor===c.k;
-    return `<button class="ctab ${on?'on':''}" onclick="setFcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
+function buildTickCfbarInner(){
+  // Trả về innerHTML của #tick-cfbar (không bao gồm thẻ div ngoài)
+  const allOn = S.tcolor==='all';
+  const allBtn=`<button class="ctab ${allOn?'on':''}" onclick="setTcolor('all')" style="${allOn?'border-color:var(--forest);color:var(--forest)':''}">Tất cả</button>`;
+  const colorBtns=COLS.filter(c=>S.flowers.some(f=>f.color===c.k)).map(c=>{
+    const on=S.tcolor===c.k;
+    return `<button class="ctab ${on?'on':''}" onclick="setTcolor('${c.k}')" style="${on?`border-color:${c.h};color:${c.h}`:''}"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.h};margin-right:3px;vertical-align:middle"></span>${c.l}</button>`;
   }).join('');
+  return allBtn+colorBtns;
 }
 function buildTickGrid(){
-  const q=S.fq.trim().toLowerCase();
+  const q=S.tq.trim().toLowerCase();
   let list=S.flowers;
-  if(S.fcolor!=='all') list=list.filter(f=>f.color===S.fcolor);
+  if(S.tcolor!=='all') list=list.filter(f=>f.color===S.tcolor);
   if(q) list=list.filter(f=>f.name.toLowerCase().includes(q));
   if(!list.length) return `<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`;
   const groups={};
@@ -944,11 +969,8 @@ function pageTick(){
   </div>`;
 
   // cfbar và grid có id riêng → partial update không cần rebuild cả trang
-  const colorFilter=`<div class="cfbar" id="tick-cfbar">
-    <button class="ctab ${S.fcolor==='all'?'on':''}" onclick="setFcolor('all')" style="${S.fcolor==='all'?'border-color:var(--forest);color:var(--forest)':''}">Tất cả</button>
-    ${buildTickCfbar()}
-  </div>`;
-  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.fq)}" placeholder="Tìm tên hoa..." oninput="setFq(this.value)"></div>`;
+  const colorFilter=`<div class="cfbar" id="tick-cfbar">${buildTickCfbarInner()}</div>`;
+  const searchBar=`<div class="sbar"><span class="sico">🔍</span><input class="fi" id="tq" value="${esc(S.tq)}" placeholder="Tìm tên hoa..." oninput="setTq(this.value)"></div>`;
 
   return proxyHtml+info+colorFilter+searchBar+`<div id="tick-grid">${buildTickGrid()}</div>`;
 }
@@ -972,7 +994,8 @@ window.toggleTick=function(id){
       if(chk) chk.textContent=ticked?'✓':'';
     }
   });
-  document.getElementById('sbc').textContent=S.msel.size;
+  const sbcEl=document.getElementById('sbc');
+  if(sbcEl) sbcEl.textContent=S.msel.size;
 };
 
 window.saveTicks=async function(){
@@ -991,7 +1014,8 @@ window.saveTicks=async function(){
     await fsSet('ticks',memberId,{flowerIds:saved,updatedAt:new Date().toISOString()});
     S.ticks[memberId]=saved;
     S.msel=new Set(saved);
-    document.getElementById('sbc').textContent=S.msel.size;
+    const sbcEl=document.getElementById('sbc');
+    if(sbcEl) sbcEl.textContent=S.msel.size;
     if(isLeader()&&S.proxyMemberId){
       const m=S.members.find(x=>x.id===S.proxyMemberId);
       toast(`Đã lưu hoa cho ${m?.displayName||'thành viên'} 🌸`);
@@ -1527,7 +1551,7 @@ window.doReset=function(){
   closeModal();
   localStorage.removeItem(CK_FB);
   db=null;
-  S={...S,loaded:false,err:null,flowers:[],clans:[],leaders:[],members:[],ticks:{},page:'flowers',msel:new Set(),proxyMemberId:null,_lastTickSubject:null};
+  S={...S,loaded:false,err:null,flowers:[],clans:[],leaders:[],members:[],ticks:{},page:'flowers',msel:new Set(),proxyMemberId:null,_lastTickSubject:null,tcolor:'all',tq:'',fcolor:'all',fq:''};
   render();
 };
 
