@@ -392,7 +392,6 @@ function initFirebase2(config){
     return true;
   } catch(e){ console.error('TK2 init error',e); return false; }
 }
-window.initFirebase2 = initFirebase2; // expose ra window để saveCopyTargetAsTk2 gọi được
 // active TK helpers
 function getActiveTk(){ return localStorage.getItem(CK_ACTIVE_TK)||'tk1'; }
 function setActiveTk(tk){ localStorage.setItem(CK_ACTIVE_TK,tk); }
@@ -582,7 +581,10 @@ async function fsSet(colName,docId,data){
       .then(()=>{
         localStorage.setItem(CK_FB2_LAST, JSON.stringify({col:colName,id:docId,ts:new Date().toISOString()}));
       })
-      .catch(e=>console.warn('TK2 write warn:',e.message));
+      .catch(e=>{
+        console.warn('TK2 write warn:',e.message);
+        toast('⚠️ Firebase 2 ghi lỗi: '+e.message,'er');
+      });
   }
   // ghi vào tk đang active
   const activeDb = (getActiveTk()==='tk2' && db2) ? db2 : db;
