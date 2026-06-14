@@ -221,6 +221,38 @@ code{background:var(--sage);padding:1px 6px;border-radius:5px;font-size:.82em;co
 .sec-div-line{flex:1;height:1px;background:var(--bd)}
 .sec-div-label{font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
 
+/* ─── FLOWER LABEL BADGE (góc phải ảnh) ────────────────────────────────── */
+.fc-label{
+  position:absolute;bottom:7px;right:7px;
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:800;color:#fff;
+  border:2px solid;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  line-height:1;
+  box-shadow:0 2px 8px rgba(0,0,0,.22);
+  pointer-events:none;
+}
+.zoom-label{
+  position:absolute;bottom:12px;right:12px;
+  width:42px;height:42px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.88rem;font-weight:800;color:#fff;
+  border:2.5px solid;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  box-shadow:0 3px 12px rgba(0,0,0,.25);
+  pointer-events:none;
+}
+.mf-label{
+  position:absolute;bottom:5px;right:5px;
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.62rem;font-weight:800;color:#fff;
+  border:1.5px solid;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  pointer-events:none;
+}
+
 @media(max-width:480px){
   .fg{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
   .fg-row{grid-template-columns:1fr}
@@ -473,7 +505,7 @@ window.openFlowerZoom=function(fid){
   const cv=col(f.color);
   const card=document.getElementById('zoomCard');
   card.innerHTML=`<button class="zoom-close" onclick="event.stopPropagation();closeZoom()">✕</button>
-    <div class="zoom-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}">`:`<span class="zoom-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
+    <div class="zoom-img" style="position:relative">${f.imgUrl?`<img src="${esc(f.imgUrl)}">`:`<span class="zoom-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f,'lg')}</div>
     <div class="zoom-body">
       <div class="zoom-name" style="color:${cv.h}">${esc(f.name)}</div>
       <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
@@ -505,7 +537,7 @@ window.openMemberFlowers=function(memberId,role){
       const cv=col(ck);
       return `<div class="mf-grp"><div class="mf-grp-bar" style="background:${cv.h}"></div><h3 style="color:${cv.h}">${cv.l}</h3><span class="mf-grp-cnt">${flowers.length}</span></div>
       <div class="mf-grid">${flowers.map(f=>`<div class="mf-fc">
-        <div class="mf-fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="mf-fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
+        <div class="mf-fc-img" style="position:relative">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="mf-fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f,'sm')}</div>
         <div class="mf-fc-name" style="color:${cv.h}">${esc(f.name)}</div>
       </div>`).join('')}</div>`;
     }).join('');
@@ -566,6 +598,17 @@ window.setTq=function(v){
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Helper: tạo nhãn tròn cho card hoa (size: 'sm'=mf-label, 'md'=fc-label, 'lg'=zoom-label)
+function labelBadgeHtml(f, size='md'){
+  if(!f.label) return '';
+  const cv=col(f.color);
+  const h=cv.h;
+  // nền = màu hoa + alpha ~40%
+  const bg=h+'66'; // hex alpha 40%
+  const cls=size==='lg'?'zoom-label':size==='sm'?'mf-label':'fc-label';
+  return `<div class="${cls}" style="background:${bg};border-color:${h}">${esc(f.label)}</div>`;
+}
 
 // Compute which clans/members own a given flower (scoped to current user's clan if member/leader)
 function getFlowerOwnership(fid){
@@ -679,6 +722,7 @@ async function loadAll(force=false){
     S.flowers=fl.filter(r=>r.name).map(r=>({
       id:r._id,name:r.name,color:r.color||'trang',
       imgUrl:r.imgUrl||'',sortOrder:Number(r.sortOrder)||0,
+      label:r.label||'',
     })).sort((a,b)=>a.sortOrder-b.sortOrder);
     S.clans=cl.filter(r=>r.name).map(r=>({id:r._id,name:r.name}));
     S.leaders=ld.filter(r=>r.username).map(r=>({
@@ -963,7 +1007,7 @@ function pageFlowers(){
       const dClans=getDisplayClans(f.id);
       const dMembers=getDisplayMembers(f.id);
       return `<div class="fc zoomable" onclick="openFlowerZoom('${f.id}')">
-        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f)}</div>
         <div class="fc-body">
           <div class="fc-name" style="color:${cv.h}">${esc(f.name)}</div>
           <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
@@ -1033,7 +1077,7 @@ function buildFlowerGrid(){
     <div class="fg">${flowers.map(f=>{
       const dC=gClans(f.id);const dM=gMembers(f.id);
       return `<div class="fc zoomable" onclick="openFlowerZoom('${f.id}')">
-        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}</div>
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f)}</div>
         <div class="fc-body">
           <div class="fc-name" style="color:${cv.h}">${esc(f.name)}</div>
           <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
@@ -1071,7 +1115,7 @@ function buildTickGrid(){
       const tk=S.msel.has(f.id);
       return `<div class="fc tc ${tk?'ticked':''}" onclick="toggleTick('${f.id}')">
         <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}
-        <div class="chk">${tk?'✓':''}</div></div>
+        ${labelBadgeHtml(f)}<div class="chk">${tk?'✓':''}</div></div>
         <div class="fc-body"><div class="fc-name">${esc(f.name)}</div>
         <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span></div>
       </div>`;
@@ -1516,6 +1560,17 @@ window.openAddFlower=function(){
         <img id="ef-img-preview" src="" style="display:none;margin-top:8px;width:100%;max-height:140px;object-fit:cover;border-radius:9px;border:1px solid var(--bd)">
       </div>
       <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="0"></div>
+      <div class="fg-col"><label class="fl">Nhãn số <span style="font-size:.72rem;color:var(--mist)">(14 / 21 / 23 / 25 / 28 / 30)</span></label>
+        <select class="fi" id="ef-label">
+          <option value="">— Không có nhãn —</option>
+          <option value="14">14</option>
+          <option value="21">21</option>
+          <option value="23">23</option>
+          <option value="25">25</option>
+          <option value="28">28</option>
+          <option value="30">30</option>
+        </select>
+      </div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
   );
@@ -1542,6 +1597,17 @@ window.openEditFlower=function(id){
         <img id="ef-img-preview" src="${esc(f.imgUrl)}" style="display:${f.imgUrl?'block':'none'};margin-top:8px;width:100%;max-height:140px;object-fit:cover;border-radius:9px;border:1px solid var(--bd)">
       </div>
       <div class="fg-col"><label class="fl">Thứ tự</label><input class="fi" id="ef-sort" type="number" value="${f.sortOrder}"></div>
+      <div class="fg-col"><label class="fl">Nhãn số <span style="font-size:.72rem;color:var(--mist)">(14 / 21 / 23 / 25 / 28 / 30)</span></label>
+        <select class="fi" id="ef-label">
+          <option value="">— Không có nhãn —</option>
+          <option value="14" ${f.label==='14'?'selected':''}>14</option>
+          <option value="21" ${f.label==='21'?'selected':''}>21</option>
+          <option value="23" ${f.label==='23'?'selected':''}>23</option>
+          <option value="25" ${f.label==='25'?'selected':''}>25</option>
+          <option value="28" ${f.label==='28'?'selected':''}>28</option>
+          <option value="30" ${f.label==='30'?'selected':''}>30</option>
+        </select>
+      </div>
     </div>`,
     `<button class="btn btn-o" onclick="closeModal()">Hủy</button><button class="btn btn-g" onclick="doSaveFlower()">💾 Lưu</button>`
   );
@@ -1558,19 +1624,20 @@ window.doSaveFlower=async function(){
   const imgUrl=document.getElementById('ef-img')?.value.trim()||'';
   const sortOrder=Number(document.getElementById('ef-sort')?.value)||0;
   const color=S._editColor||'trang';
+  const label=document.getElementById('ef-label')?.value||'';
   const btn=document.querySelector('.mbox .btn-g');
   if(btn){btn.disabled=true;btn.innerHTML='<div class="sp"></div>';}
   setPulse('loading');
   try {
     if(S._editFlowerId){
-      await fsSet('flowers',S._editFlowerId,{name,color,imgUrl,sortOrder});
+      await fsSet('flowers',S._editFlowerId,{name,color,imgUrl,sortOrder,label});
       const f=S.flowers.find(x=>x.id===S._editFlowerId);
-      if(f){f.name=name;f.color=color;f.imgUrl=imgUrl;f.sortOrder=sortOrder;}
+      if(f){f.name=name;f.color=color;f.imgUrl=imgUrl;f.sortOrder=sortOrder;f.label=label;}
       toast('Đã cập nhật hoa');
     } else {
       const newId='f'+Date.now();
-      await fsSet('flowers',newId,{name,color,imgUrl,sortOrder});
-      S.flowers.push({id:newId,name,color,imgUrl,sortOrder});
+      await fsSet('flowers',newId,{name,color,imgUrl,sortOrder,label});
+      S.flowers.push({id:newId,name,color,imgUrl,sortOrder,label});
       toast('Đã thêm hoa 🌸');
     }
     S.flowers.sort((a,b)=>a.sortOrder-b.sortOrder);
