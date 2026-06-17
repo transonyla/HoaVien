@@ -113,6 +113,23 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(-
 .grp h2{font-size:.98rem;font-weight:800}
 .grp-cnt{font-size:.7rem;color:var(--mist);background:var(--sage);border:1px solid var(--bd);padding:2px 8px;border-radius:var(--rp);font-weight:600}
 
+/* ─── TICK SECTION (đã đánh dấu / chưa đánh dấu, đóng mở được) ───────────── */
+.tsec{border-radius:var(--r);border:2px solid var(--bd);background:var(--white);margin-bottom:14px;overflow:hidden;box-shadow:var(--sh)}
+.tsec-head{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .12s,filter .12s;background:linear-gradient(0deg,var(--sage),var(--sage))}
+.tsec-head:hover{filter:brightness(.97)}
+.tsec-head:active{filter:brightness(.93)}
+.tsec-head-hl{position:relative}
+.tsec-ico{font-size:1.2rem;flex-shrink:0;transition:transform .2s;color:var(--forest2)}
+.tsec.closed .tsec-ico{transform:rotate(-90deg)}
+.tsec-title{font-size:.95rem;font-weight:800;flex:1}
+.tsec-cnt{font-size:.74rem;font-weight:700;padding:3px 10px;border-radius:var(--rp);flex-shrink:0}
+.tsec-cnt.marked{background:var(--petal);color:#fff}
+.tsec-cnt.unmarked{background:var(--leaf);color:#fff}
+.tsec-hint{font-size:.66rem;font-weight:700;color:var(--mist);background:var(--white);border:1px solid var(--bd);padding:3px 8px;border-radius:var(--rp);flex-shrink:0;white-space:nowrap}
+.tsec-body{padding:4px 15px 16px}
+.tsec.closed .tsec-body{display:none}
+@media (max-width:480px){.tsec-hint{display:none}}
+
 .fg-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
 .fg-col{display:flex;flex-direction:column;gap:5px}
 .fl{font-size:.76rem;font-weight:700;color:var(--forest2)}
@@ -375,6 +392,8 @@ let S = {
   _editFlowerId:null, _editColor:'trang',
   proxyMemberId: null,
   _lastTickSubject: null,
+  _tickSecOpen: {marked:false, unmarked:true},
+  _tickMarkedSnapshot: new Set(),
 };
 
 // ─── SUPABASE CRUD ───────────────────────────────────────────────────────────
@@ -831,6 +850,7 @@ window.doLoginAdmin=async function(){
     S.page='flowers';toast('Chào Admin! 🔓');
     await loadAll(true);
     render();
+    window.scrollTo({top:0});
   } catch(e){
     toast('Lỗi: '+e.message,'er');
     if(btn){btn.disabled=false;btn.innerHTML='🔓 Đăng nhập Admin';}
@@ -856,6 +876,7 @@ window.doLoginLeader=async function(){
     S.msel=new Set(S.ticks[id]||[]);
     S.page='flowers';toast('Chào '+(l?.displayName||u)+' 🏆');
     render();
+    window.scrollTo({top:0});
   } catch(e){
     toast('Lỗi: '+e.message,'er');
     if(btn){btn.disabled=false;btn.innerHTML='🏆 Đăng nhập Hội trưởng';}
@@ -880,6 +901,7 @@ window.doLoginMember=async function(){
     S.msel=new Set(S.ticks[id]||[]);
     S.page='tick';toast('Chào '+(m?.displayName||u)+' 🌸');
     render();
+    window.scrollTo({top:0});
   } catch(e){
     toast('Lỗi: '+e.message,'er');
     if(btn){btn.disabled=false;btn.innerHTML='🌸 Đăng nhập Thành viên';}
@@ -1073,12 +1095,8 @@ function buildTickCfbarInner(){
   }).join('');
   return allBtn+colorBtns;
 }
-function buildTickGrid(){
-  const q=S.tq.trim().toLowerCase();
-  let list=S.flowers;
-  if(S.tcolor!=='all') list=list.filter(f=>f.color===S.tcolor);
-  if(q) list=list.filter(f=>f.name.toLowerCase().includes(q));
-  if(!list.length) return `<div class="empty"><div class="empty-icon">🌿</div>Không tìm thấy</div>`;
+function buildColorGroupsHtml(list){
+  if(!list.length) return `<div class="empty" style="padding:18px 0"><div class="empty-icon">🌿</div>Không có hoa nào</div>`;
   const groups={};
   list.forEach(f=>{(groups[f.color]||(groups[f.color]=[])).push(f);});
   return Object.entries(groups).map(([ck,flowers])=>{
@@ -1095,6 +1113,52 @@ function buildTickGrid(){
     }).join('')}</div>`;
   }).join('');
 }
+function buildTickGrid(){
+  const q=S.tq.trim().toLowerCase();
+  const total=S.flowers.length;
+
+  // ── "Đã đánh dấu": dùng snapshot cố định (cập nhật khi vào trang / sau khi Lưu) ──
+  // Không áp dụng tìm kiếm/lọc màu — luôn hiện đầy đủ hoa đã lưu.
+  // Không đổi realtime khi người dùng tick/untick (chỉ đổi sau khi bấm Lưu).
+  const markedList = S.flowers.filter(f=>S._tickMarkedSnapshot.has(f.id));
+
+  // ── "Chưa đánh dấu": áp dụng tìm kiếm + lọc màu, loại các hoa đã có trong snapshot ──
+  let unmarkedList = S.flowers.filter(f=>!S._tickMarkedSnapshot.has(f.id));
+  if(S.tcolor!=='all') unmarkedList=unmarkedList.filter(f=>f.color===S.tcolor);
+  if(q) unmarkedList=unmarkedList.filter(f=>f.name.toLowerCase().includes(q));
+
+  const markedOpen=S._tickSecOpen.marked!==false;
+  const unmarkedOpen=S._tickSecOpen.unmarked!==false;
+  const markedTotalCnt=S._tickMarkedSnapshot.size;
+  const unmarkedTotalCnt=total-markedTotalCnt;
+  const markedLabel = markedTotalCnt===0 ? `0 Hoa` : `${markedTotalCnt}/${total} Hoa`;
+  const unmarkedLabel = `${unmarkedTotalCnt}/${total} Hoa`;
+
+  return `
+  <div class="tsec ${markedOpen?'':'closed'}" id="tsec-marked">
+    <div class="tsec-head tsec-head-hl" onclick="toggleTickSec('marked')">
+      <span class="tsec-ico">▾</span>
+      <span class="tsec-title">🌸 Đã đánh dấu</span>
+      <span class="tsec-cnt marked">${markedLabel}</span>
+      <span class="tsec-hint">chạm để đóng/mở</span>
+    </div>
+    <div class="tsec-body" id="tsec-marked-body">${buildColorGroupsHtml(markedList)}</div>
+  </div>
+  <div class="tsec ${unmarkedOpen?'':'closed'}" id="tsec-unmarked">
+    <div class="tsec-head tsec-head-hl" onclick="toggleTickSec('unmarked')">
+      <span class="tsec-ico">▾</span>
+      <span class="tsec-title">⬜ Chưa đánh dấu</span>
+      <span class="tsec-cnt unmarked">${unmarkedLabel}</span>
+      <span class="tsec-hint">chạm để đóng/mở</span>
+    </div>
+    <div class="tsec-body" id="tsec-unmarked-body">${unmarkedList.length?buildColorGroupsHtml(unmarkedList):`<div class="empty" style="padding:18px 0"><div class="empty-icon">🌿</div>Không tìm thấy</div>`}</div>
+  </div>`;
+}
+window.toggleTickSec=function(key){
+  S._tickSecOpen[key]=!(S._tickSecOpen[key]!==false);
+  const el=document.getElementById('tsec-'+key);
+  if(el) el.classList.toggle('closed', S._tickSecOpen[key]===false);
+};
 
 // ─── TICK PAGE (MEMBER / LEADER) ──────────────────────────────────────────────
 function pageTick(){
@@ -1112,6 +1176,8 @@ function pageTick(){
   if(S._lastTickSubject !== subjectId){
     S._lastTickSubject = subjectId;
     S.msel = new Set(S.ticks[subjectId]||[]);
+    S._tickMarkedSnapshot = new Set(S.ticks[subjectId]||[]);
+    S._tickSecOpen = {marked:false, unmarked:true};
   }
 
   let proxyHtml='';
@@ -1159,6 +1225,8 @@ window.setProxyMember=function(memberId){
 window.toggleTick=function(id){
   if(!isMember()&&!isLeader()){toast('Chỉ thành viên mới tick được!','wn');return;}
   S.msel.has(id)?S.msel.delete(id):S.msel.add(id);
+  // Không di chuyển hoa giữa 2 danh sách ngay — chỉ đổi viền/dấu tick tại chỗ.
+  // Hoa chỉ thực sự chuyển sang "Đã đánh dấu" sau khi bấm Lưu (saveTicks).
   const cards=document.querySelectorAll('.tc');
   cards.forEach(card=>{
     const fn=card.getAttribute('onclick');
@@ -1189,6 +1257,10 @@ window.saveTicks=async function(){
     await fsSet('ticks',memberId,{flowerIds:saved,updatedAt:new Date().toISOString()});
     S.ticks[memberId]=saved;
     S.msel=new Set(saved);
+    S._tickMarkedSnapshot=new Set(saved);
+    // Sau khi Lưu, hoa mới thực sự chuyển khối Đã đánh dấu / Chưa đánh dấu → rebuild grid
+    const tickGrid=document.getElementById('tick-grid');
+    if(tickGrid) tickGrid.innerHTML=buildTickGrid();
     const sbcEl=document.getElementById('sbc');
     if(sbcEl) sbcEl.textContent=S.msel.size;
     if(isLeader()&&S.proxyMemberId){
@@ -1816,7 +1888,16 @@ function manageClanMembers(){
     <td style="font-size:.78rem;color:var(--mist)">${(S.ticks[m.id]||[]).length} hoa</td>
     <td><button class="ibtn del" onclick="confirmDelMember('${m.id}')">🗑️</button></td>
   </tr>`).join('');
-  return `<div class="card">
+  const noteHtml=`<div class="card" style="margin-bottom:14px;border:1.5px solid #f59e0b;background:#fffbeb">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <span style="font-size:1.4rem;flex-shrink:0">⚠️</span>
+      <div style="font-size:.8rem;color:#92400e;line-height:1.65">
+        <div style="font-weight:800;margin-bottom:4px;font-size:.84rem">Lưu ý quan trọng khi tạo Username / Mật khẩu cho thành viên!</div>
+        Hội trưởng cần <strong>nhớ và nhập đúng chính xác</strong> Username và Mật khẩu (bao gồm cả <strong>chữ HOA / chữ thường</strong>) để thành viên đăng nhập đúng. Tuyệt đối <strong>không dùng ký tự đặc biệt</strong> (@ # $ % &amp; * ! ...), <strong>không dấu tiếng Việt</strong> và <strong>không có khoảng trắng</strong> trong Username/Mật khẩu — chỉ nên dùng chữ cái không dấu (a-z, A-Z) và số (0-9).
+      </div>
+    </div>
+  </div>`;
+  return noteHtml+`<div class="card">
     <div class="card-title">👥 Thành viên Hội ${esc(clanName)} <span style="font-size:.76rem;font-weight:600;color:var(--mist)">(${myMembers.length})</span>
       <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="openAddMember()">+ Thêm TV</button>
     </div>
@@ -1832,6 +1913,7 @@ window.openAddMember=function(){
     : `<input type="hidden" id="am-cl" value="${myClanId()}">`;
   openModal('👤 Thêm thành viên',
     `<div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:.74rem;color:#92400e;background:#fffbeb;border:1px solid #f59e0b;border-radius:9px;padding:9px 11px;line-height:1.55"><strong>⚠️ Lưu ý:</strong> Nhớ chính xác Username/Mật khẩu (đúng chữ HOA/thường). Không dùng ký tự đặc biệt, dấu tiếng Việt hoặc khoảng trắng.</div>
       <div class="fg-col"><label class="fl">Tên hiển thị *</label><input class="fi" id="am-d" placeholder="Khánh Ly"></div>
       <div class="fg-col"><label class="fl">Username *</label><input class="fi" id="am-u" placeholder="khanhly"></div>
       <div class="fg-col"><label class="fl">Mật khẩu *</label><input class="fi" id="am-p" type="password" placeholder="••••••"></div>
