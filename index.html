@@ -173,17 +173,27 @@ body::before{
 .fc-clans{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
 .clan-tag{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:var(--rp);background:var(--clan2);color:var(--clan)}
 
+/* ─── OVERLAY BACKDROP — dùng ::before + opacity thay vì animate background
+   để tránh repaint toàn màn hình (compositor-only, không trigger repaint) ──── */
+.zoom-bg::before,.mf-bg::before{
+  content:'';position:absolute;inset:0;
+  background:rgba(90,48,71,.55);
+  opacity:0;transition:opacity .32s ease;
+  pointer-events:none;z-index:0;
+}
+.zoom-bg.on::before,.mf-bg.on::before{opacity:1}
+.zoom-bg>*,.mf-bg>*{position:relative;z-index:1}
+
 /* ─── FLOWER ZOOM OVERLAY — như khung "rương báu" mở ra ───────────────── */
 .fc.zoomable{cursor:zoom-in}
-.zoom-bg{position:fixed;inset:0;background:rgba(90,48,71,0);z-index:500;display:flex;align-items:center;justify-content:center;padding:28px;transition:background .32s cubic-bezier(.22,1,.36,1);pointer-events:none}
-.zoom-bg.on{background:rgba(90,48,71,.55);pointer-events:auto;backdrop-filter:blur(2px)}
+.zoom-bg{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:28px;pointer-events:none}
+.zoom-bg.on{pointer-events:auto}
 .zoom-card{
   background:var(--white);border-radius:22px;box-shadow:var(--shd);overflow:hidden;
   width:min(420px,100%);max-height:calc(100vh - 56px);display:flex;flex-direction:column;
-  transform:scale(.4);opacity:0;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease;
-  cursor:zoom-out;position:relative;border:3px solid var(--gold2);
+  transform:scale(.4);opacity:0;
+  cursor:zoom-out;position:relative;border:3px solid var(--gold2);will-change:transform,opacity;
 }
-.zoom-bg.on .zoom-card{transform:scale(1);opacity:1}
 .zoom-card::after{
   content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:3;
   background-image:
@@ -205,8 +215,8 @@ body::before{
 .zoom-close:hover{background:#fff}
 
 /* ─── MEMBER FLOWERS POPUP ───────────────────────────────────────────────── */
-.mf-bg{position:fixed;inset:0;background:rgba(90,48,71,0);z-index:500;display:flex;align-items:center;justify-content:center;padding:18px;transition:background .28s ease;pointer-events:none}
-.mf-bg.on{background:rgba(90,48,71,.5);pointer-events:auto}
+.mf-bg{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:18px;pointer-events:none}
+.mf-bg.on{pointer-events:auto}
 .mf-card{background:var(--white);border-radius:22px;overflow:hidden;box-shadow:var(--shd);width:min(560px,100%);max-height:calc(100vh - 56px);display:flex;flex-direction:column;transform:translateY(24px) scale(.96);opacity:0;transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .24s ease;border:3px solid var(--gold2);position:relative;will-change:transform,opacity}
 .mf-card::after{
   content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:3;
@@ -217,7 +227,6 @@ body::before{
   background-position:top left, top right;
   background-size:32px 32px;
 }
-.mf-bg.on .mf-card{transform:none;opacity:1}
 .mf-head{padding:18px 20px 12px;border-bottom:1.5px solid var(--bd);flex-shrink:0;position:relative;background:linear-gradient(180deg,var(--sage),transparent)}
 .mf-title{font-size:1.1rem;font-weight:800;color:var(--forest);font-family:'Noto Serif SC',serif}
 .mf-sub{font-size:.78rem;color:var(--mist);margin-top:3px}
@@ -649,6 +658,9 @@ window.openFlowerZoom=function(fid){
   if(!f) return;
   const cv=col(f.color);
   const card=document.getElementById('zoomCard');
+  card.style.transition='none';
+  card.style.transform='scale(.4)';
+  card.style.opacity='0';
   card.innerHTML=`<button class="zoom-close" onclick="event.stopPropagation();closeZoom()">✕</button>
     <div class="zoom-img" style="position:relative">${f.imgUrl?`<img src="${esc(f.imgUrl)}">`:`<span class="zoom-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f,'lg')}</div>
     <div class="zoom-body">
@@ -656,9 +668,18 @@ window.openFlowerZoom=function(fid){
       <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
       <div class="zoom-owners">${ownershipTagsHtml(fid)}</div>
     </div>`;
+  card.querySelectorAll('img').forEach(img=>{ img.removeAttribute('loading'); img.setAttribute('decoding','async'); });
   document.getElementById('zoomBg').classList.add('on');
+  void card.offsetHeight;
+  card.style.transition='transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease';
+  card.style.transform='scale(1)';
+  card.style.opacity='1';
 };
 window.closeZoom=function(){
+  const card=document.getElementById('zoomCard');
+  card.style.transition='transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease';
+  card.style.transform='scale(.4)';
+  card.style.opacity='0';
   document.getElementById('zoomBg').classList.remove('on');
 };
 
@@ -682,7 +703,7 @@ window.openMemberFlowers=function(memberId,role){
       const cv=col(ck);
       return `<div class="mf-grp"><div class="mf-grp-bar" style="background:${cv.h}"></div><h3 style="color:${cv.h}">${cv.l}</h3><span class="mf-grp-cnt">${flowers.length}</span></div>
       <div class="mf-grid">${flowers.map(f=>`<div class="mf-fc">
-        <div class="mf-fc-img" style="position:relative">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="mf-fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f,'sm')}</div>
+        <div class="mf-fc-img" style="position:relative">${f.imgUrl?`<img src="${esc(f.imgUrl)}" decoding="async">`:`<span class="mf-fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f,'sm')}</div>
         <div class="mf-fc-name" style="color:${cv.h}">${esc(f.name)}</div>
       </div>`).join('')}</div>`;
     }).join('');
@@ -708,13 +729,35 @@ window.openMemberFlowers=function(memberId,role){
   mfBg.classList.add('on');
   // force reflow để browser tính layout xong, rồi mới bật transition
   void card.offsetHeight;
-  card.style.transition='';
-  card.style.transform='';
-  card.style.opacity='';
+  card.style.transition='transform .32s cubic-bezier(.22,1,.36,1),opacity .24s ease';
+  card.style.transform='translateY(0) scale(1)';
+  card.style.opacity='1';
 };
 window.closeMemberFlowers=function(){
+  const card=document.getElementById('mfCard');
+  card.style.transition='transform .32s cubic-bezier(.22,1,.36,1),opacity .24s ease';
+  card.style.transform='translateY(24px) scale(.96)';
+  card.style.opacity='0';
   document.getElementById('mfBg').classList.remove('on');
 };
+
+// ─── GPU LAYER WARM-UP ───────────────────────────────────────────────────────
+// Chạy khi load và mỗi khi chuyển tab: buộc browser tạo composite layer
+// sẵn cho zoom-card và mf-card, tránh chớp ở lần click đầu tiên.
+function warmUpGPULayers(){
+  const els=[
+    document.getElementById('zoomCard'),
+    document.getElementById('mfCard')
+  ];
+  els.forEach(el=>{
+    if(!el) return;
+    // Kích hoạt GPU layer bằng cách animate transform (không nhìn thấy thay đổi)
+    el.animate([{transform:el.style.transform||'translateY(0)'},
+                {transform:el.style.transform||'translateY(0)'}],
+               {duration:1}).onfinish=function(){ this.effect&&this.cancel(); };
+  });
+}
+warmUpGPULayers();
 
 // ─── EXPOSED STATE SETTERS (needed by inline onclick in ES module) ────────────
 window.setLoginTab=function(t){S.loginTab=t;render();};
@@ -948,6 +991,8 @@ window.goto=function(p){
   }
   S.page=p;
   render();
+  // Warm-up lại GPU layer sau mỗi lần chuyển tab
+  requestAnimationFrame(warmUpGPULayers);
 };
 
 function renderPage(){
@@ -1182,7 +1227,7 @@ function pageFlowers(){
       const dClans=getDisplayClans(f.id);
       const dMembers=getDisplayMembers(f.id);
       return `<div class="fc zoomable" onclick="openFlowerZoom('${f.id}')">
-        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f)}</div>
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" decoding="async">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f)}</div>
         <div class="fc-body">
           <div class="fc-name" style="color:${cv.h}">${esc(f.name)}</div>
           <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
@@ -1252,7 +1297,7 @@ function buildFlowerGrid(){
     <div class="fg">${flowers.map(f=>{
       const dC=gClans(f.id);const dM=gMembers(f.id);
       return `<div class="fc zoomable" onclick="openFlowerZoom('${f.id}')">
-        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f)}</div>
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" decoding="async">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}${labelBadgeHtml(f)}</div>
         <div class="fc-body">
           <div class="fc-name" style="color:${cv.h}">${esc(f.name)}</div>
           <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span>
@@ -1285,7 +1330,7 @@ function buildColorGroupsHtml(list){
     <div class="fg">${flowers.map(f=>{
       const tk=S.msel.has(f.id);
       return `<div class="fc tc ${tk?'ticked':''}" onclick="toggleTick('${f.id}')">
-        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" loading="lazy">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}
+        <div class="fc-img">${f.imgUrl?`<img src="${esc(f.imgUrl)}" decoding="async">`:`<span class="fc-letter" style="color:${cv.h}">${esc(f.name.charAt(0))}</span>`}
         ${labelBadgeHtml(f)}<div class="chk">${tk?'✓':''}</div></div>
         <div class="fc-body"><div class="fc-name">${esc(f.name)}</div>
         <span class="fc-badge" style="background:${cv.h}18;color:${cv.h}"><span class="fc-dot" style="background:${cv.h}"></span>${cv.l}</span></div>
